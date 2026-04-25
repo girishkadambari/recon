@@ -1,0 +1,20 @@
+meta {
+  name: List Uploads
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/uploads
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  page: 1
+  page_size: 20
+}

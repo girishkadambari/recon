@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-reconciliation-worker"
+version = "0.1.0"
+description = "AI-assisted reconciliation worker for payment gateway, bank, and invoice data"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+
+    # ORM & DB
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.13.3",
+    "psycopg[binary]>=3.2.3",
+
+    # Validation
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5.0",
+
+    # Auth & Security
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "httpx>=0.27.2",
+
+    # File processing
+    "pandas>=2.2.3",
+    "openpyxl>=3.1.5",
+
+    # Storage
+    "boto3>=1.35.0",
+    "botocore>=1.35.0",
+
+    # Queue
+    "rq>=1.16.2",
+    "redis>=5.1.0",
+
+    # AI
+    "anthropic>=0.40.0",
+
+    # Utilities
+    "python-dotenv>=1.0.1",
+    "structlog>=24.4.0",
+    "uuid6>=2024.1.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+    "httpx>=0.27.2",
+    "factory-boy>=3.3.1",
+    "faker>=30.0.0",
+    "ruff>=0.6.9",
+    "mypy>=1.11.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/app/tests"]
+asyncio_mode = "auto"
+env = [
+    "APP_ENV=test",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true

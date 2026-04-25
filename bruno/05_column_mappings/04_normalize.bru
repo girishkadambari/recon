@@ -1,0 +1,28 @@
+meta {
+  name: Normalize File
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/api/column-mappings/{{file_id}}/normalize
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  Transforms all SourceRecords for this file into canonical records
+  using the confirmed column mapping.
+
+  - Decimal parsing: handles ₹, $, thousand separators
+  - Date parsing: 9 formats (ISO, DD/MM/YYYY, DD-Mon-YYYY, etc.)
+  - Runs in batches of 500 rows
+  - Returns rows_inserted and canonical_table name
+
+  Requires: mapping status = CONFIRMED
+  Raises 409 if already normalized.
+}

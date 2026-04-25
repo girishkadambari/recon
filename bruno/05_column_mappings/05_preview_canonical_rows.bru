@@ -1,0 +1,26 @@
+meta {
+  name: Preview Canonical Rows
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/api/column-mappings/{{file_id}}/rows
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  page: 1
+  page_size: 20
+}
+
+docs {
+  Returns normalized canonical rows for this file after normalization.
+  Amounts are stored as NUMERIC(18,6) — returned as strings in JSON.
+  Dates are UTC ISO format.
+}

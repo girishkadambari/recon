@@ -1,0 +1,14 @@
+invoice_id,customer_id,customer_name,invoice_date,due_date,amount,paid_amount,currency,status,payment_id,notes
+INV-1001,CUST-001,Alice Sharma,2026-02-25,2026-03-05,5000.00,5000.00,INR,paid,pay_STRIPE001,Monthly subscription
+INV-1002,CUST-002,Bob Mehta,2026-02-25,2026-03-05,12000.00,12000.00,INR,paid,pay_STRIPE002,Annual subscription
+INV-1003,CUST-003,Carol Patel,2026-02-28,2026-03-08,3500.00,3000.00,INR,partially_paid,pay_STRIPE003,Partial payment - refund issued
+INV-1004,CUST-004,Dave Singh,2026-03-01,2026-03-10,8000.00,8000.00,INR,paid,pay_STRIPE004,Monthly subscription
+INV-1005,CUST-005,Eve Reddy,2026-03-01,2026-03-10,2200.00,2200.00,INR,paid,pay_STRIPE005,Add-on seats
+INV-1006,CUST-006,Frank Kumar,2026-03-01,2026-03-10,15000.00,15000.00,INR,paid,pay_STRIPE006,Annual enterprise
+INV-1007,CUST-007,Grace Iyer,2026-03-02,2026-03-12,7500.00,0.00,INR,unpaid,,No payment received - check status
+INV-1008,CUST-008,Henry Varma,2026-03-02,2026-03-12,4000.00,0.00,INR,unpaid,,Payment failed
+INV-2001,CUST-001,Alice Sharma,2026-02-28,2026-03-08,5000.00,5000.00,INR,paid,pay_RZP001,
+INV-2002,CUST-002,Bob Mehta,2026-03-01,2026-03-10,8500.00,8500.00,INR,paid,pay_RZP002,
+INV-2004,CUST-004,Dave Singh,2026-03-03,2026-03-12,12000.00,12000.00,INR,paid,pay_RZP004,
+INV-2005,CUST-005,Eve Reddy,2026-03-03,2026-03-12,6700.00,6700.00,INR,paid,pay_RZP005,
+INV-9999,CUST-099,Unknown Client,2026-03-01,2026-03-10,19999.00,0.00,INR,unpaid,,No matching payment found

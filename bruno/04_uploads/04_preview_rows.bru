@@ -1,0 +1,24 @@
+meta {
+  name: Preview Rows
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/api/uploads/{{file_id}}/preview
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  limit: 10
+}
+
+docs {
+  Returns the first N raw rows from the parsed file.
+  Useful to inspect column names before requesting a mapping.
+}

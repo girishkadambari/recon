@@ -1,0 +1,38 @@
+meta {
+  name: List Exceptions
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/exceptions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  page: 1
+  page_size: 50
+  ~status: OPEN
+  ~reason: UNMATCHED_SOURCE
+}
+
+docs {
+  List exception items for a run.
+
+  Optional filters:
+  - status: OPEN | RESOLVED | WAIVED
+  - reason: UNMATCHED_SOURCE | UNMATCHED_TARGET | AMOUNT_MISMATCH | DATE_MISMATCH | DUPLICATE_MATCH
+
+  Remove the ~ prefix to activate filters.
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.data.length > 0) {
+    bru.setEnvVar("exception_id", res.body.data[0].id);
+  }
+}

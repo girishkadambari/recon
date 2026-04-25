@@ -1,0 +1,47 @@
+meta {
+  name: Generate XLSX Export
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/export
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  scope: FULL
+}
+
+docs {
+  Generates a multi-sheet XLSX report synchronously.
+  File is ready for download immediately after this call returns.
+
+  scope options:
+  - FULL            — Summary + Matches + Exceptions (default)
+  - MATCHES_ONLY    — Summary + Matches only
+  - EXCEPTIONS_ONLY — Summary + Exceptions only
+
+  XLSX sheets:
+  - Summary: run stats, match rate (colour-coded green/amber/red)
+  - Matches: confidence score, strategy, amount delta, date delta
+  - Exceptions: reason, AI explanation, resolution note
+
+  Row colours:
+  - Matches: 🟢 MATCHED/APPROVED, 🟡 PENDING_REVIEW
+  - Exceptions: 🔴 OPEN, 🟢 RESOLVED/WAIVED
+
+  Returns export job object. Copy `id` to `export_job_id` env var.
+  Run must be COMPLETED. Raises 409 otherwise.
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("export_job_id", res.body.data.id);
+  }
+}

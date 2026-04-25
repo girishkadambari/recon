@@ -1,0 +1,31 @@
+meta {
+  name: Batch Explain All Open Exceptions
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/explain-all
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  Generates AI explanations for all OPEN exceptions in the run.
+
+  - Skips exceptions that already have an explanation (use single /explain?force_refresh=true to override)
+  - Capped at 50 exceptions per call (cost control)
+  - Processes each exception sequentially
+
+  Returns:
+  - explained: number newly generated
+  - skipped: number already had explanations
+  - failed: number that errored (logged, not fatal)
+  - capped_at: 50
+
+  Run must be COMPLETED. Raises 409 on PENDING run.
+}

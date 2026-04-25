@@ -1,0 +1,38 @@
+meta {
+  name: List Matches
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/matches
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  page: 1
+  page_size: 50
+  ~status: MATCHED
+  ~min_confidence: 80
+}
+
+docs {
+  List match candidates for a run.
+
+  Optional filters:
+  - status: MATCHED | PENDING_REVIEW | APPROVED | REJECTED
+  - min_confidence: integer 0–100
+
+  Remove the ~ prefix on params to activate them.
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.data.length > 0) {
+    bru.setEnvVar("match_id", res.body.data[0].id);
+  }
+}

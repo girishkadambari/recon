@@ -1,0 +1,9 @@
+payment_id,order_id,settlement_id,settled_at,payout_id,utr,amount,fee,tax,refund,net_settlement,currency,status,customer_email,description
+pay_RZP001,ord_RZP001,sett_RZP001,2026-03-03,po_RZP001,HDFC20260303001,5000.00,90.00,16.20,0.00,4893.80,INR,settled,alice@example.com,INV-2001
+pay_RZP002,ord_RZP002,sett_RZP001,2026-03-03,po_RZP001,HDFC20260303001,8500.00,153.00,27.54,0.00,8319.46,INR,settled,bob@example.com,INV-2002
+pay_RZP003,ord_RZP003,sett_RZP001,2026-03-03,po_RZP001,HDFC20260303001,3200.00,57.60,10.37,500.00,2632.03,INR,settled,carol@example.com,INV-2003
+pay_RZP004,ord_RZP004,sett_RZP002,2026-03-06,po_RZP002,HDFC20260306002,12000.00,216.00,38.88,0.00,11745.12,INR,settled,dave@example.com,INV-2004
+pay_RZP005,ord_RZP005,sett_RZP002,2026-03-06,po_RZP002,HDFC20260306002,6700.00,120.60,21.71,0.00,6557.69,INR,settled,eve@example.com,INV-2005
+pay_RZP006,ord_RZP006,sett_RZP002,2026-03-06,po_RZP002,HDFC20260306002,9800.00,176.40,31.75,1000.00,8591.85,INR,settled,frank@example.com,INV-2006
+pay_RZP007,ord_RZP007,sett_RZP003,2026-03-09,po_RZP003,HDFC20260309003,4500.00,81.00,14.58,0.00,4404.42,INR,settled,grace@example.com,
+pay_RZP008,ord_RZP008,,,,15000.00,270.00,48.60,0.00,14681.40,INR,pending,henry@example.com,INV-2008

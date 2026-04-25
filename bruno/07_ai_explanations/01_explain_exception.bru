@@ -1,0 +1,33 @@
+meta {
+  name: Explain Single Exception
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/exceptions/{{exception_id}}/explain
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  force_refresh: false
+}
+
+docs {
+  Calls Claude AI to explain why this record could not be matched.
+
+  Returns:
+  - explanation: 2-3 sentence plain-English explanation
+  - probable_cause: short root cause label
+  - recommended_action: one specific action for the accountant
+  - confidence: HIGH | MEDIUM | LOW
+  - cached: true if returning cached explanation, false if freshly generated
+
+  Set force_refresh=true to regenerate even if explanation already exists.
+  AI is advisory only — this never changes exception status.
+}

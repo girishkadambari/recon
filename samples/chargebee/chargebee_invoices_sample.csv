@@ -1,0 +1,8 @@
+invoice_id,transaction_id,customer_id,subscription_id,amount,gateway,gateway_txn_id,currency,status,transaction_date,invoice_date
+INV-CB-001,txn_CB001,cust_CB001,sub_CB001,5000.00,stripe,pay_STRIPE001,INR,paid,2026-03-01,2026-03-01
+INV-CB-002,txn_CB002,cust_CB002,sub_CB002,12000.00,stripe,pay_STRIPE002,INR,paid,2026-03-02,2026-03-01
+INV-CB-003,txn_CB003,cust_CB003,sub_CB003,3500.00,razorpay,pay_RZP001,INR,paid,2026-03-01,2026-03-01
+INV-CB-004,txn_CB004,cust_CB004,,8000.00,stripe,pay_STRIPE004,INR,paid,2026-03-04,2026-03-01
+INV-CB-005,txn_CB005,cust_CB005,sub_CB005,2200.00,razorpay,pay_RZP002,INR,paid,2026-03-03,2026-03-01
+INV-CB-006,txn_CB006,cust_CB006,sub_CB006,15000.00,razorpay,pay_RZP004,INR,paid,2026-03-04,2026-03-01
+INV-CB-007,txn_CB007,cust_CB007,sub_CB007,9800.00,razorpay,pay_RZP006,INR,partially_paid,2026-03-06,2026-03-01

@@ -1,0 +1,37 @@
+meta {
+  name: Confirm Mapping
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/api/column-mappings/{{file_id}}/confirm
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {}
+}
+
+docs {
+  Confirm the AI-suggested mapping as-is (send empty body `{}`).
+
+  OR override specific columns before confirming:
+  {
+    "mapping": {
+      "payment_id": "transaction_id",
+      "amount": "gross_amount",
+      "fee": "fee_amount",
+      "currency": "currency",
+      "created_at": "transaction_date",
+      "internal_notes": "ignore"
+    }
+  }
+
+  After confirming, call /normalize to transform SourceRecords into canonical table.
+}

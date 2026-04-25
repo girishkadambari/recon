@@ -1,0 +1,70 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.egg-info/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Alembic (don't ignore versions — they are code)
+# alembic/versions/
+
+# Logs
+*.log
+logs/
+
+# S3 / LocalStack uploads (local data)
+localstack_data/
+
+# Docker volumes (local)
+postgres_data/
+
+# MyPy
+.mypy_cache/
+
+# Ruff cache
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# OS
+Thumbs.db
+
+# Seed script output (generated CSVs — not source data)
+backend/app/scripts/seed_files/
+
+# Bruno environment overrides (may contain tokens)
+bruno/environments/*.local.bru
+
+# AI / Gemini tool scratch dirs
+.gemini/
+brain/

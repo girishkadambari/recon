@@ -1,0 +1,40 @@
+meta {
+  name: Upload File
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/uploads
+  body: multipart-form
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:multipart-form {
+  file: @file(/path/to/stripe_payments.csv)
+  file_category: STRIPE_REPORT
+}
+
+docs {
+  Upload a CSV or XLSX file for reconciliation.
+
+  file_category options:
+  - STRIPE_REPORT
+  - RAZORPAY_REPORT
+  - CHARGEBEE_INVOICE_EXPORT
+  - CHARGEBEE_TRANSACTION_EXPORT
+  - BANK_STATEMENT
+  - INVOICE_EXPORT
+
+  After upload, copy the returned `id` into `file_id` env var.
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("file_id", res.body.data.id);
+  }
+}

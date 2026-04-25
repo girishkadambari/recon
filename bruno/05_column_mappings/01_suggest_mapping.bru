@@ -1,0 +1,29 @@
+meta {
+  name: Suggest Column Mapping
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/column-mappings/{{file_id}}/suggest
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  Sends the first 5 rows of the file to Claude AI.
+  Claude maps each raw column → canonical field.
+  Returns status: PENDING_REVIEW.
+  You must call /confirm before normalization is possible.
+
+  Canonical fields include:  transaction_id, gross_amount, net_amount, fee_amount,
+  tax_amount, currency, status, transaction_date, settlement_date, customer_email,
+  customer_id, gateway_txn_id, payout_id, payment_method, description, utr,
+  credit_amount, debit_amount, balance, narration, invoice_id, invoice_date,
+  due_date, invoice_number, invoice_status, subscription_id, plan_id, plan_name,
+  reference, and `ignore` to skip a column.
+}

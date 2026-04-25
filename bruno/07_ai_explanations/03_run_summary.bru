@@ -1,0 +1,31 @@
+meta {
+  name: AI Run Summary
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  Generates an AI executive summary of the entire completed run.
+  Suitable for CFO-level reporting.
+
+  Returns:
+  - headline: one-line summary
+  - summary: 3-5 sentence narrative
+  - risk_level: LOW | MEDIUM | HIGH | CRITICAL
+  - key_findings: list of notable points
+  - recommended_actions: list of next steps
+  - requires_immediate_attention: boolean
+
+  Generated fresh on each call (not cached).
+  Run must be COMPLETED. Raises 409 otherwise.
+}

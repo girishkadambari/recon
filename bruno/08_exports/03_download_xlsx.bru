@@ -1,0 +1,27 @@
+meta {
+  name: Download XLSX File
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/reconciliations/{{run_id}}/export/{{export_job_id}}/download
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  Streams the XLSX file directly.
+  Response headers:
+  - Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+  - Content-Disposition: attachment; filename="recon_<run_name>_<timestamp>.xlsx"
+  - Content-Length: file size in bytes
+
+  In Bruno: click "Save Response" to download the file to disk.
+  Raises 404 if job_id doesn't exist or belongs to a different run/workspace.
+  Raises 409 if export is not yet COMPLETED.
+}

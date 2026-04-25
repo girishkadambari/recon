@@ -1,0 +1,9 @@
+payment_id,created_at,amount,amount_refunded,fee,tax,net,currency,status,order_id,customer_email,description,payout_id,settlement_id
+pay_STRIPE001,2026-03-01 10:00:00,5000.00,0.00,148.00,0.00,4852.00,INR,succeeded,ord_001,alice@example.com,Invoice INV-1001,po_STRIPE001,sett_STRIPE001
+pay_STRIPE002,2026-03-02 11:30:00,12000.00,0.00,354.00,0.00,11646.00,INR,succeeded,ord_002,bob@example.com,Invoice INV-1002,po_STRIPE001,sett_STRIPE001
+pay_STRIPE003,2026-03-03 09:15:00,3500.00,500.00,88.50,0.00,2911.50,INR,succeeded,ord_003,carol@example.com,Invoice INV-1003,po_STRIPE001,sett_STRIPE001
+pay_STRIPE004,2026-03-04 14:00:00,8000.00,0.00,236.00,0.00,7764.00,INR,succeeded,ord_004,dave@example.com,Invoice INV-1004,po_STRIPE002,sett_STRIPE002
+pay_STRIPE005,2026-03-05 16:45:00,2200.00,0.00,64.90,0.00,2135.10,INR,succeeded,ord_005,eve@example.com,Invoice INV-1005,po_STRIPE002,sett_STRIPE002
+pay_STRIPE006,2026-03-06 08:00:00,15000.00,0.00,442.50,0.00,14557.50,INR,succeeded,ord_006,frank@example.com,Invoice INV-1006,po_STRIPE002,sett_STRIPE002
+pay_STRIPE007,2026-03-07 12:00:00,7500.00,0.00,221.25,0.00,7278.75,INR,succeeded,ord_007,grace@example.com,,po_STRIPE002,sett_STRIPE002
+pay_STRIPE008,2026-03-08 10:30:00,4000.00,0.00,118.00,0.00,3882.00,INR,failed,ord_008,henry@example.com,Invoice INV-1008,,
