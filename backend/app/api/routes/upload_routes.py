@@ -7,11 +7,13 @@ GET    /api/uploads/{file_id}           — Get upload details
 GET    /api/uploads/{file_id}/preview   — Preview parsed rows
 DELETE /api/uploads/{file_id}           — Soft delete
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from fastapi import Request, APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -31,6 +33,7 @@ ALLOWED_CATEGORIES = {c.value for c in FileCategory}
 
 @router.post("", summary="Upload a CSV or XLSX file")
 async def upload_file(
+    request: Request,
     file: UploadFile = File(...),
     file_category: str = Form(..., description="One of: " + ", ".join(ALLOWED_CATEGORIES)),
     ctx: CurrentUserContext = Depends(get_current_user_context),
@@ -51,7 +54,8 @@ async def upload_file(
                     "code": "INVALID_FILE_CATEGORY",
                     "message": f"Invalid file_category '{file_category}'. Allowed: {sorted(ALLOWED_CATEGORIES)}",
                     "details": {},
-                }
+                },
+                "request_id": getattr(request.state, "request_id", None),
             },
         )
 
@@ -68,17 +72,20 @@ async def upload_file(
         mime_type=mime_type,
     )
 
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=201,
         content={
-            "data": UploadedFileResponse.model_validate(uploaded_file).model_dump(mode="json")
+            "data": UploadedFileResponse.model_validate(uploaded_file).model_dump(mode="json"),
+            "request_id": request_id,
         },
     )
 
 
 @router.get("", summary="List uploaded files")
 def list_uploads(
-    file_category: str | None = Query(None),
+    request: Request,
+    file_category: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=200),
     ctx: CurrentUserContext = Depends(get_current_user_context),
@@ -91,35 +98,45 @@ def list_uploads(
         page=page,
         page_size=page_size,
     )
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=200,
         content={
             "data": [UploadedFileResponse.model_validate(f).model_dump(mode="json") for f in files],
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "has_next": (page * page_size) < total,
-            "has_prev": page > 1,
+            "pagination": {
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "has_next": (page * page_size) < total,
+                "has_prev": page > 1,
+            },
+            "request_id": request_id,
         },
     )
 
 
 @router.get("/{file_id}", summary="Get upload details")
 def get_upload(
+    request: Request,
     file_id: uuid.UUID,
     ctx: CurrentUserContext = Depends(get_current_user_context),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     svc = FileIngestionService(db)
     uf = svc.get_file(ctx.active_workspace_id, file_id)
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=200,
-        content={"data": UploadedFileResponse.model_validate(uf).model_dump(mode="json")},
+        content={
+            "data": UploadedFileResponse.model_validate(uf).model_dump(mode="json"),
+            "request_id": request_id,
+        },
     )
 
 
 @router.get("/{file_id}/preview", summary="Preview parsed rows")
 def preview_upload(
+    request: Request,
     file_id: uuid.UUID,
     n: int = Query(20, ge=1, le=200, description="Number of rows to preview"),
     ctx: CurrentUserContext = Depends(get_current_user_context),
@@ -138,6 +155,7 @@ def preview_upload(
     rows = [r.raw_data_json for r in records]
     column_names = list(rows[0].keys()) if rows else []
 
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=200,
         content={
@@ -149,20 +167,26 @@ def preview_upload(
                 "rows": rows,
                 "total_rows": total,
                 "preview_count": len(rows),
-            }
+            },
+            "request_id": request_id,
         },
     )
 
 
 @router.delete("/{file_id}", summary="Soft delete an uploaded file")
 def delete_upload(
+    request: Request,
     file_id: uuid.UUID,
     ctx: CurrentUserContext = Depends(get_current_user_context),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
     svc = FileIngestionService(db)
     svc.delete_file(ctx.active_workspace_id, file_id, ctx.user_id)
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=200,
-        content={"data": {"message": f"File {file_id} deleted."}},
+        content={
+            "data": {"message": f"File {file_id} deleted."},
+            "request_id": request_id,
+        },
     )

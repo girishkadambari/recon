@@ -1,6 +1,8 @@
 """
 Phase 5 schemas — AI explanation and run summary response models.
 """
+from __future__ import annotations
+from typing import Optional
 from typing import Any
 
 import uuid
@@ -9,11 +11,11 @@ from pydantic import BaseModel
 
 class ExceptionExplanationResponse(BaseModel):
     exception_id: str
-    explanation: str | None = None
-    probable_cause: str | None = None
-    recommended_action: str | None = None
-    confidence: str | None = None
-    ai_explanation: str | None = None   # cached full text
+    explanation: Optional[str] = None
+    probable_cause: Optional[str] = None
+    recommended_action: Optional[str] = None
+    confidence: Optional[str] = None
+    ai_explanation: Optional[str] = None   # cached full text
     cached: bool = False
 
 
@@ -28,7 +30,7 @@ class BatchExplainResponse(BaseModel):
 class RunSummaryResponse(BaseModel):
     run_id: str
     run_name: str
-    match_rate_pct: int | None
+    match_rate_pct: Optional[int]
     headline: str
     summary: str
     risk_level: str

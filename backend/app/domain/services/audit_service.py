@@ -2,8 +2,10 @@
 AuditService — thin wrapper over AuditRepository.
 Provides a single log() method usable from any service.
 """
+from __future__ import annotations
+from typing import Union, Optional
 import uuid
-from typing import Any
+from typing import Union, Any
 
 from sqlalchemy.orm import Session
 
@@ -17,14 +19,14 @@ class AuditService:
 
     def log(
         self,
-        event_type: AuditEventType | str,
-        actor_user_id: uuid.UUID | None = None,
-        workspace_id: uuid.UUID | None = None,
-        entity_type: str | None = None,
-        entity_id: uuid.UUID | None = None,
-        metadata: dict[str, Any] | None = None,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+        event_type: Union[AuditEventType, str],
+        actor_user_id: Optional[uuid.UUID] = None,
+        workspace_id: Optional[uuid.UUID] = None,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[uuid.UUID] = None,
+        metadata:Optional[ dict[str, Any] ] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
     ) -> None:
         """Log an audit event. Flush immediately but do not commit — the caller's transaction commits it."""
         self.repo.create(
@@ -37,3 +39,6 @@ class AuditService:
             ip_address=ip_address,
             user_agent=user_agent,
         )
+
+    def list_activity(self, workspace_id: uuid.UUID, limit: int = 50):
+        return self.repo.list_for_workspace(workspace_id, limit=limit)

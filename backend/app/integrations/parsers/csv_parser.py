@@ -2,6 +2,7 @@
 CSV parser — uses pandas for robust CSV parsing.
 Handles BOM, different encodings, various delimiters.
 """
+from typing import Optional
 import io
 import structlog
 
@@ -18,7 +19,7 @@ DELIMITERS_TO_TRY = [",", ";", "\t", "|"]
 class CSVParser(BaseParser):
     def parse(self, file_bytes: bytes, file_name: str = "") -> ParseResult:
         errors: list[str] = []
-        df: pd.DataFrame | None = None
+        df: Optional[pd.DataFrame] = None
 
         for encoding in ENCODINGS_TO_TRY:
             for delimiter in DELIMITERS_TO_TRY:
@@ -64,9 +65,15 @@ class CSVParser(BaseParser):
         df.columns = [str(c).strip() for c in df.columns]
 
         # Replace Pandas NA with None for clean JSON
-        df = df.where(pd.notna(df), None)
+        # We also convert to object to allow None values alongside strings
+        df = df.astype(object).where(pd.notna(df), None)
 
-        rows = df.to_dict(orient="records")
+        # Final safety check: convert any remaining float NaN to None
+        rows = []
+        for r in df.to_dict(orient="records"):
+            # Ensure no float('nan') slips through
+            rows.append({k: (None if pd.isna(v) else v) for k, v in r.items()})
+
         return ParseResult(
             rows=rows,
             column_names=list(df.columns),

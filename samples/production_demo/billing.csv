@@ -1,0 +1,11 @@
+invoice_id,amount,currency,customer,invoice_date,status
+INV-001,1000.00,INR,Acme Corp,2026-03-01,collected
+INV-002,2500.00,INR,Globex,2026-03-02,collected
+INV-003,1500.00,INR,Soylent,2026-03-02,collected
+INV-004,500.00,INR,Initech,2026-03-03,collected
+INV-005,5000.00,INR,Hooli (OFFLINE),2026-03-04,pending
+INV-006,1200.00,INR,Virtucon,2026-03-05,collected
+INV-007,3000.00,INR,Stark Ind,2026-03-06,collected
+INV-008,800.00,INR,Wayne Ent,2026-03-07,collected
+INV-009,4500.00,INR,Umbrella,2026-03-08,collected
+INV-010,2200.00,INR,Cyberdyne,2026-03-09,collected

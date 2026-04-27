@@ -1,6 +1,8 @@
 """
 UploadedFile repository.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from typing import List
 
@@ -14,7 +16,7 @@ class UploadedFileRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_by_id(self, file_id: uuid.UUID, workspace_id: uuid.UUID) -> UploadedFile | None:
+    def get_by_id(self, file_id: uuid.UUID, workspace_id: uuid.UUID) -> Optional[UploadedFile]:
         return (
             self.db.query(UploadedFile)
             .filter(
@@ -28,7 +30,7 @@ class UploadedFileRepository:
     def list_for_workspace(
         self,
         workspace_id: uuid.UUID,
-        file_category: str | None = None,
+        file_category: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[UploadedFile], int]:
@@ -49,11 +51,11 @@ class UploadedFileRepository:
         file_category: str,
         storage_bucket: str,
         storage_key: str,
-        mime_type: str | None,
-        file_size_bytes: int | None,
-        checksum_sha256: str | None,
+        mime_type: Optional[str],
+        file_size_bytes: Optional[int],
+        checksum_sha256: Optional[str],
         uploaded_by_user_id: uuid.UUID,
-        file_id_override: uuid.UUID | None = None,
+        file_id_override: Optional[uuid.UUID] = None,
     ) -> UploadedFile:
         uf = UploadedFile(
             workspace_id=workspace_id,
@@ -79,8 +81,8 @@ class UploadedFileRepository:
         self,
         uploaded_file: UploadedFile,
         status: UploadedFileStatus,
-        row_count: int | None = None,
-        parse_error: str | None = None,
+        row_count: Optional[int] = None,
+        parse_error: Optional[str] = None,
     ) -> UploadedFile:
         from app.core.dates import utcnow
 

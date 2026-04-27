@@ -2,6 +2,8 @@
 User repository — all DB queries for users.
 Every query must use workspace context where applicable.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 
@@ -15,13 +17,13 @@ class UserRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_by_id(self, user_id: uuid.UUID) -> User | None:
+    def get_by_id(self, user_id: uuid.UUID) -> Optional[User]:
         return self.db.query(User).filter(User.id == user_id).first()
 
-    def get_by_email(self, email: str) -> User | None:
+    def get_by_email(self, email: str) -> Optional[User]:
         return self.db.query(User).filter(User.email == email).first()
 
-    def get_by_provider(self, auth_provider: str, provider_subject: str) -> User | None:
+    def get_by_provider(self, auth_provider: str, provider_subject: str) -> Optional[User]:
         return (
             self.db.query(User)
             .filter(
@@ -36,8 +38,8 @@ class UserRepository:
         email: str,
         auth_provider: str,
         provider_subject: str,
-        full_name: str | None = None,
-        avatar_url: str | None = None,
+        full_name: Optional[str] = None,
+        avatar_url: Optional[str] = None,
     ) -> User:
         user = User(
             email=email,

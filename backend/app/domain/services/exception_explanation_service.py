@@ -9,6 +9,8 @@ Business logic:
 AI is purely advisory — explanations are stored in ExceptionItem.ai_explanation
 but never affect match status or exception resolution.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from collections import Counter
 from typing import Any
@@ -167,7 +169,7 @@ class ExceptionExplanationService:
         all_exceptions, _ = self.recon_repo.list_exceptions(
             run_id=run_id, workspace_id=workspace_id, limit=500
         )
-        exception_breakdown = dict(Counter(e.reason for e in all_exceptions))
+        exception_breakdown = dict(Counter(e.exception_type for e in all_exceptions))
 
         all_matches, _ = self.recon_repo.list_matches(
             run_id=run_id, workspace_id=workspace_id, limit=5000
@@ -229,13 +231,14 @@ class ExceptionExplanationService:
             "target_category": tgt_cat,
             "match_rate_pct": run.match_rate_pct or 0,
             "file_role": exc.file_role,
-            "reason_code": exc.reason,
+            "reason_code": exc.exception_type,
+            "severity": exc.severity,
             "amount": str(exc.amount) if exc.amount else "N/A",
             "currency": exc.currency,
             "record_data": exc.details_json or {},
         }
 
-    def _get_file_category(self, workspace_id: uuid.UUID, file_id: uuid.UUID | None) -> str:
+    def _get_file_category(self, workspace_id: uuid.UUID, file_id: Optional[uuid.UUID]) -> str:
         if not file_id:
             return "Unknown"
         uf = self.file_repo.get_by_id(file_id, workspace_id)

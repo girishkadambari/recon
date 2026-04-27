@@ -1,10 +1,10 @@
 """
 Column mapping and normalization enums.
 """
-from enum import StrEnum
+from enum import Enum
 
 
-class CanonicalField(StrEnum):
+class CanonicalField(str, Enum):
     """
     Canonical field names used across all record types.
     These are the target field names that raw columns get mapped to.
@@ -50,13 +50,13 @@ class CanonicalField(StrEnum):
     IGNORE = "ignore"
 
 
-class MappingStatus(StrEnum):
+class MappingStatus(str, Enum):
     PENDING_REVIEW = "PENDING_REVIEW"
     CONFIRMED = "CONFIRMED"
     REJECTED = "REJECTED"
 
 
-class NormalizationStatus(StrEnum):
+class NormalizationStatus(str, Enum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"

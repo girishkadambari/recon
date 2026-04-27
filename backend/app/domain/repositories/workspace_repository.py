@@ -2,6 +2,8 @@
 Workspace repository — all DB queries for workspaces and workspace members.
 All workspace queries are scoped to membership.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy.orm import Session
@@ -17,10 +19,10 @@ class WorkspaceRepository:
 
     # ── Workspaces ───────────────────────────────────────────────────
 
-    def get_by_id(self, workspace_id: uuid.UUID) -> Workspace | None:
+    def get_by_id(self, workspace_id: uuid.UUID) -> Optional[Workspace]:
         return self.db.query(Workspace).filter(Workspace.id == workspace_id).first()
 
-    def get_by_slug(self, slug: str) -> Workspace | None:
+    def get_by_slug(self, slug: str) -> Optional[Workspace]:
         return self.db.query(Workspace).filter(Workspace.slug == slug).first()
 
     def list_for_user(self, user_id: uuid.UUID) -> list[Workspace]:
@@ -43,7 +45,7 @@ class WorkspaceRepository:
         self,
         name: str,
         created_by_user_id: uuid.UUID,
-        slug: str | None = None,
+        slug: Optional[str] = None,
     ) -> Workspace:
         ws = Workspace(
             name=name,
@@ -56,9 +58,36 @@ class WorkspaceRepository:
         self.db.flush()
         return ws
 
+    def update(
+        self,
+        workspace_id: uuid.UUID,
+        name: str,
+        updated_by_user_id: uuid.UUID,
+    ) -> Optional[Workspace]:
+        from app.core.dates import utcnow
+        ws = self.get_by_id(workspace_id)
+        if ws:
+            ws.name = name
+            ws.updated_by_user_id = updated_by_user_id
+            ws.updated_at = utcnow()
+        return ws
+
+    def delete(
+        self,
+        workspace_id: uuid.UUID,
+        updated_by_user_id: uuid.UUID,
+    ) -> Optional[Workspace]:
+        from app.core.dates import utcnow
+        ws = self.get_by_id(workspace_id)
+        if ws:
+            ws.status = WorkspaceStatus.DELETED
+            ws.updated_by_user_id = updated_by_user_id
+            ws.updated_at = utcnow()
+        return ws
+
     # ── Workspace Members ────────────────────────────────────────────
 
-    def get_member(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> WorkspaceMember | None:
+    def get_member(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> Optional[WorkspaceMember]:
         return (
             self.db.query(WorkspaceMember)
             .filter(
@@ -84,7 +113,7 @@ class WorkspaceRepository:
         user_id: uuid.UUID,
         role: str,
         created_by_user_id: uuid.UUID,
-        invited_by_user_id: uuid.UUID | None = None,
+        invited_by_user_id: Optional[uuid.UUID] = None,
     ) -> WorkspaceMember:
         from app.core.dates import utcnow
 
@@ -108,7 +137,7 @@ class WorkspaceRepository:
         member_id: uuid.UUID,
         new_role: str,
         updated_by_user_id: uuid.UUID,
-    ) -> WorkspaceMember | None:
+    ) -> Optional[WorkspaceMember]:
         from app.core.dates import utcnow
 
         member = (

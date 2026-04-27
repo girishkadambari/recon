@@ -1,6 +1,7 @@
 """
 Date utilities — all dates must be timezone-aware.
 """
+from typing import Optional
 from datetime import datetime, timezone, date
 from typing import Any
 
@@ -13,7 +14,7 @@ def utcnow() -> datetime:
     return datetime.now(tz=UTC)
 
 
-def parse_date(value: Any, field_name: str = "date") -> datetime | None:
+def parse_date(value: Any, field_name: str = "date") -> Optional[datetime]:
     """
     Parse a date/datetime value to a timezone-aware UTC datetime.
     Accepts: datetime, date, str (ISO 8601 or common formats).
@@ -24,7 +25,7 @@ def parse_date(value: Any, field_name: str = "date") -> datetime | None:
     if isinstance(value, datetime):
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)
+        return value.astimezone(timezone.utc)
     if isinstance(value, date):
         return datetime(value.year, value.month, value.day, tzinfo=UTC)
     if isinstance(value, str):
@@ -49,14 +50,14 @@ def parse_date(value: Any, field_name: str = "date") -> datetime | None:
                 dt = datetime.strptime(stripped, fmt)
                 if dt.tzinfo is None:
                     dt = dt.replace(tzinfo=UTC)
-                return dt.astimezone(UTC)
+                return dt.astimezone(timezone.utc)
             except ValueError:
                 continue
         raise ValueError(f"Cannot parse '{value}' as a date for field '{field_name}'")
     raise ValueError(f"Unsupported type {type(value).__name__} for field '{field_name}'")
 
 
-def parse_date_or_none(value: Any, field_name: str = "date") -> datetime | None:
+def parse_date_or_none(value: Any, field_name: str = "date") -> Optional[datetime]:
     """Returns None for empty/null values without raising."""
     try:
         return parse_date(value, field_name)

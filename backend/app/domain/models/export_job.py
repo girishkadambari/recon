@@ -4,6 +4,8 @@ Table: export_jobs
 
 Tracks the generation lifecycle of a reconciliation XLSX export.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy import ForeignKey, Integer, String, Text
@@ -42,17 +44,17 @@ class ExportJob(
     export_scope: Mapped[str] = mapped_column(String(50), nullable=False, default=ExportScope.FULL)
 
     # S3 storage key where the generated file lives
-    storage_key: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    storage_key: Mapped[Optional[str ]] = mapped_column(String(1024), nullable=True)
 
     # Display metadata
-    file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    file_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    file_name: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    file_size_bytes: Mapped[Optional[int ]] = mapped_column(Integer, nullable=True)
 
     # Row counts written
     matched_rows_exported: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     exception_rows_exported: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    error_message: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"<ExportJob id={self.id} run={self.run_id} status={self.status}>"

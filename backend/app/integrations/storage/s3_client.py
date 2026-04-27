@@ -2,6 +2,7 @@
 S3 / LocalStack storage client.
 All file I/O goes through this module.
 """
+from typing import Optional
 import hashlib
 import io
 import mimetypes
@@ -33,7 +34,7 @@ def _get_s3_client():
 def upload_file(
     file_bytes: bytes,
     storage_key: str,
-    content_type: str | None = None,
+    content_type: Optional[str] = None,
 ) -> str:
     """
     Upload bytes to S3 at the given storage_key.

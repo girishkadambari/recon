@@ -1,6 +1,4 @@
 """
-SQLAlchemy declarative Base and all reusable model mixins.
-
 Every business table must include:
   - UUIDPrimaryKeyMixin
   - TimestampMixin
@@ -9,8 +7,10 @@ Every business table must include:
 
 Tables that support deletion: also add SoftDeleteMixin.
 """
+from __future__ import annotations
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -63,12 +63,12 @@ class WorkspaceScopedMixin:
 class UserAuditMixin:
     """created_by_user_id and updated_by_user_id audit columns."""
 
-    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+    created_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
     )
-    updated_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+    updated_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
@@ -78,11 +78,11 @@ class UserAuditMixin:
 class SoftDeleteMixin:
     """Optional soft-delete support."""
 
-    deleted_at: Mapped[datetime | None] = mapped_column(
+    deleted_at: Mapped[Optional[datetime ]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
-    deleted_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+    deleted_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         nullable=True,
     )

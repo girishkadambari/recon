@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Union
 """
 Export routes.
 
@@ -8,7 +10,7 @@ GET  /api/reconciliations/{run_id}/export/{job_id}/download — Stream XLSX file
 import uuid
 
 import structlog
-from fastapi import APIRouter, Depends, Query
+from fastapi import Request, APIRouter, Depends, Query
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
@@ -18,24 +20,32 @@ from app.domain.enums.export_enums import ExportScope
 from app.domain.services.export_service import ExportService
 
 logger = structlog.get_logger(__name__)
-router = APIRouter(prefix="/api/reconciliations", tags=["exports"])
+router = APIRouter(prefix="/api/reconciliation-runs", tags=["exports"])
+
+
+@router.get("/global/exports", summary="List all export jobs in workspace")
+def list_global_exports(
+    request: Request,
+    ctx: CurrentUserContext = Depends(get_current_user_context),
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    svc = ExportService(db)
+    jobs = svc.list_all_jobs(workspace_id=ctx.active_workspace_id)
+    request_id = getattr(request.state, "request_id", None)
+    return JSONResponse(
+        status_code=200,
+        content={"data": jobs, "request_id": request_id},
+    )
 
 
 @router.post("/{run_id}/export", summary="Generate XLSX export for a completed run")
 def create_export(
+    request: Request,
     run_id: uuid.UUID,
-    scope: ExportScope = Query(ExportScope.FULL, description="FULL | MATCHES_ONLY | EXCEPTIONS_ONLY"),
+    scope: ExportScope = Query(ExportScope.FULL, description="Union[FULL, Union[MATCHES_ONLY], EXCEPTIONS_ONLY]"),
     ctx: CurrentUserContext = Depends(get_current_user_context),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
-    """
-    Generates and stores an XLSX report with three sheets:
-    - Summary (run stats + match rate)
-    - Matches (confidence, strategy, deltas)
-    - Exceptions (reason, AI explanation)
-
-    Run must be COMPLETED. Export is synchronous — file is ready immediately.
-    """
     svc = ExportService(db)
     job = svc.create_and_run(
         workspace_id=ctx.active_workspace_id,
@@ -43,11 +53,16 @@ def create_export(
         user_id=ctx.user_id,
         export_scope=scope,
     )
-    return JSONResponse(status_code=201, content={"data": job})
+    request_id = getattr(request.state, "request_id", None)
+    return JSONResponse(
+        status_code=201,
+        content={"data": job, "request_id": request_id},
+    )
 
 
 @router.get("/{run_id}/export", summary="List export jobs for a run")
 def list_exports(
+    request: Request,
     run_id: uuid.UUID,
     ctx: CurrentUserContext = Depends(get_current_user_context),
     db: Session = Depends(get_db),
@@ -57,7 +72,11 @@ def list_exports(
         workspace_id=ctx.active_workspace_id,
         run_id=run_id,
     )
-    return JSONResponse(status_code=200, content={"data": jobs})
+    request_id = getattr(request.state, "request_id", None)
+    return JSONResponse(
+        status_code=200,
+        content={"data": jobs, "request_id": request_id},
+    )
 
 
 @router.get(

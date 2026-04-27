@@ -1,6 +1,8 @@
 """
 ColumnMapping repository.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy.orm import Session
@@ -15,7 +17,7 @@ class ColumnMappingRepository:
 
     def get_by_file_id(
         self, uploaded_file_id: uuid.UUID, workspace_id: uuid.UUID
-    ) -> ColumnMapping | None:
+    ) -> Optional[ColumnMapping]:
         return (
             self.db.query(ColumnMapping)
             .filter(
@@ -30,8 +32,8 @@ class ColumnMappingRepository:
         workspace_id: uuid.UUID,
         uploaded_file_id: uuid.UUID,
         mapping_json: dict,
-        ai_suggested_mapping_json: dict | None,
-        ai_confidence_score: int | None,
+        ai_suggested_mapping_json: Optional[dict],
+        ai_confidence_score: Optional[int],
         created_by_user_id: uuid.UUID,
     ) -> ColumnMapping:
         existing = self.get_by_file_id(uploaded_file_id, workspace_id)
@@ -67,7 +69,7 @@ class ColumnMappingRepository:
         self,
         column_mapping: ColumnMapping,
         confirmed_by_user_id: uuid.UUID,
-        updated_mapping: dict | None = None,
+        updated_mapping: Optional[dict] = None,
     ) -> ColumnMapping:
         from app.core.dates import utcnow
         if updated_mapping is not None:
@@ -83,7 +85,7 @@ class ColumnMappingRepository:
         self,
         column_mapping: ColumnMapping,
         status: str,
-        error: str | None = None,
+        error: Optional[str] = None,
     ) -> ColumnMapping:
         from app.core.dates import utcnow
         column_mapping.normalization_status = status

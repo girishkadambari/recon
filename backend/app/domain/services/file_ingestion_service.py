@@ -2,6 +2,8 @@
 FileIngestionService — orchestrates upload → parse → store source records.
 Business logic only. No HTTP concerns.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 import structlog
@@ -43,7 +45,7 @@ class FileIngestionService:
         file_name: str,
         file_bytes: bytes,
         file_category: str,
-        mime_type: str | None = None,
+        mime_type: Optional[str] = None,
     ) -> UploadedFile:
         """
         Full ingestion pipeline:
@@ -174,7 +176,7 @@ class FileIngestionService:
     def list_files(
         self,
         workspace_id: uuid.UUID,
-        file_category: str | None = None,
+        file_category: Optional[str] = None,
         page: int = 1,
         page_size: int = 50,
     ) -> tuple[list[UploadedFile], int]:

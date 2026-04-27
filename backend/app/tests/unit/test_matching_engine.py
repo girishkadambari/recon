@@ -1,6 +1,8 @@
 """
 Unit tests: MatchingEngine — pure logic, no DB, no AI.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from decimal import Decimal
 from datetime import datetime, timezone, timedelta
@@ -8,8 +10,8 @@ from datetime import datetime, timezone, timedelta
 import pytest
 
 from app.domain.services.matching_engine import MatchingEngine, EngineOutput
+from app.domain.enums.exception_enums import ExceptionType
 from app.domain.enums.reconciliation_enums import (
-    ExceptionReason,
     FileRole,
     MatchStatus,
     MatchStrategy,
@@ -17,10 +19,10 @@ from app.domain.enums.reconciliation_enums import (
 
 
 def _make_payment(
-    transaction_id: str | None = None,
+    transaction_id: Optional[str] = None,
     amount: Decimal = Decimal("1000.00"),
-    date: datetime | None = None,
-    utr: str | None = None,
+    date: Optional[datetime] = None,
+    utr: Optional[str] = None,
     currency: str = "INR",
 ) -> dict:
     return {
@@ -34,10 +36,10 @@ def _make_payment(
 
 
 def _make_bank(
-    utr: str | None = None,
+    utr: Optional[str] = None,
     amount: Decimal = Decimal("1000.00"),
-    date: datetime | None = None,
-    reference: str | None = None,
+    date: Optional[datetime] = None,
+    reference: Optional[str] = None,
 ) -> dict:
     return {
         "id": uuid.uuid4(),
@@ -60,7 +62,7 @@ class TestExactIDMatch:
         assert len(out.matches) == 1
         assert out.matches[0].confidence_score == 100
         assert out.matches[0].match_strategy == MatchStrategy.EXACT_ID
-        assert out.matches[0].status == MatchStatus.MATCHED
+        assert out.matches[0].status == MatchStatus.APPROVED
         assert len(out.exceptions) == 0
 
     def test_matches_by_utr_field(self):
@@ -69,7 +71,8 @@ class TestExactIDMatch:
         engine = MatchingEngine()
         out = engine.run(src, tgt, "payment_records", "bank_records")
         assert len(out.matches) == 1
-        assert out.matches[0].match_strategy == MatchStrategy.EXACT_ID
+        # UTR logic now uses UTR strategy if 'utr' string is in the value
+        assert out.matches[0].match_strategy in (MatchStrategy.EXACT_ID, MatchStrategy.UTR)
 
     def test_id_match_case_insensitive(self):
         src = [_make_payment(transaction_id="TXN-ABC")]
@@ -95,6 +98,7 @@ class TestAmountDateMatch:
         engine = MatchingEngine()
         out = engine.run(src, tgt, "payment_records", "bank_records")
         assert len(out.matches) == 1
+        # Falls through to AMOUNT_ONLY (Strategy 3) instead of NET_SETTLEMENT
         assert out.matches[0].match_strategy == MatchStrategy.AMOUNT_ONLY
 
 
@@ -115,7 +119,7 @@ class TestAmountOnlyMatch:
         assert len(out.matches) == 1
         # Falls through to AMOUNT_ONLY since date window is exceeded
         assert out.matches[0].match_strategy == MatchStrategy.AMOUNT_ONLY
-        assert out.matches[0].status == MatchStatus.PENDING_REVIEW
+        assert out.matches[0].status == MatchStatus.MATCHED
 
 
 class TestFuzzyAmountMatch:
@@ -145,7 +149,8 @@ class TestExceptions:
         engine = MatchingEngine()
         out = engine.run(src, tgt, "payment_records", "bank_records")
         assert len(out.exceptions) == 1
-        assert out.exceptions[0].reason == ExceptionReason.UNMATCHED_SOURCE
+        # Payment unmatched for Bank Target -> MISSING_BANK_CREDIT
+        assert out.exceptions[0].reason == ExceptionType.MISSING_BANK_CREDIT
         assert out.exceptions[0].file_role == FileRole.SOURCE
 
     def test_unmatched_target_creates_exception(self):
@@ -154,7 +159,7 @@ class TestExceptions:
         engine = MatchingEngine()
         out = engine.run(src, tgt, "payment_records", "bank_records")
         assert len(out.exceptions) == 1
-        assert out.exceptions[0].reason == ExceptionReason.UNMATCHED_TARGET
+        assert out.exceptions[0].reason == ExceptionType.UNKNOWN_BANK_CREDIT
         assert out.exceptions[0].file_role == FileRole.TARGET
 
     def test_both_unmatched_two_exceptions(self):

@@ -1,10 +1,10 @@
 """
 Export job enums.
 """
-from enum import StrEnum
+from enum import Enum
 
 
-class ExportStatus(StrEnum):
+class ExportStatus(str, Enum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
@@ -12,12 +12,12 @@ class ExportStatus(StrEnum):
     EXPIRED = "EXPIRED"
 
 
-class ExportFormat(StrEnum):
+class ExportFormat(str, Enum):
     XLSX = "XLSX"
     CSV = "CSV"   # future
 
 
-class ExportScope(StrEnum):
+class ExportScope(str, Enum):
     FULL = "FULL"            # matches + exceptions + summary
     MATCHES_ONLY = "MATCHES_ONLY"
     EXCEPTIONS_ONLY = "EXCEPTIONS_ONLY"

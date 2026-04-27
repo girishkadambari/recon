@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # ── Core API Layer
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: settleproof-api-prod
+    container_name: settleproof-prod-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      - JOB_MODE=sync # Forces all reconciliation workloads inside API requests synchronously
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Note: Volume mapping excluded; file ingestions map exclusively to S3 remotely
+
+    # ── Background Worker (Optional)
+    # Uncomment and configure strictly *only* when upgrading the system to Pilot Mode handling massive files asynchronously via SQS.
+    # Not required initially since JOB_MODE=sync natively overrides task dispatch limits.
+    #
+    # worker:
+    #   build: 
+    #     context: ./backend
+    #     dockerfile: Dockerfile
+    #   image: settleproof-worker-prod
+    #   container_name: settleproof-prod-worker
+    #   command: rq worker default normalization reconciliation exports
+    #   restart: unless-stopped
+    #   env_file:
+    #     - .env.production
+    #   environment:
+    #     - JOB_MODE=sqs
+    #   depends_on:
+    #     - api
+
+    # Note: Local Database explicitly omitted.
+    # SettleProof relies on Neon Managed Serverless Postgres bindings injected via .env.production

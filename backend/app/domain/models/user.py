@@ -2,6 +2,8 @@
 User ORM model.
 Table: users
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 
@@ -17,8 +19,8 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
-    full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    avatar_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    full_name: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    avatar_url: Mapped[Optional[str ]] = mapped_column(String(2048), nullable=True)
 
     auth_provider: Mapped[str] = mapped_column(
         String(50),
@@ -33,7 +35,7 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=UserStatus.ACTIVE,
     )
 
-    last_login_at: Mapped[datetime | None] = mapped_column(
+    last_login_at: Mapped[Optional[datetime ]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 

@@ -1,0 +1,10 @@
+meta {
+  name: List Matches
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/api/reconciliation-runs/{{run_id}}/matches
+  auth: inherit
+}

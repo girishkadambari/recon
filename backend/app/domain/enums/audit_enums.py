@@ -1,10 +1,10 @@
 """
 Audit event type enums.
 """
-from enum import StrEnum
+from enum import Enum
 
 
-class AuditEventType(StrEnum):
+class AuditEventType(str, Enum):
     USER_SIGNED_IN = "USER_SIGNED_IN"
     WORKSPACE_CREATED = "WORKSPACE_CREATED"
     FILE_UPLOADED = "FILE_UPLOADED"

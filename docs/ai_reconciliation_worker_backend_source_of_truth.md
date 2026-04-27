@@ -516,7 +516,7 @@ ALLOWED_FILE_TYPES=.csv,.xlsx
 LOG_LEVEL=INFO
 
 # Security
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
+CORS_ALLOWED_ORIGINS=http://localhost:3001,http://localhost:8000
 ```
 
 ---

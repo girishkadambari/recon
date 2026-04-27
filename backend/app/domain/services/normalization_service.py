@@ -8,6 +8,8 @@ Business logic:
   4. Bulk insert into the appropriate canonical table
   5. Mark ColumnMapping.normalization_status = COMPLETED
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -19,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ConflictError, NotFoundError
 from app.core.money import parse_decimal
 from app.domain.enums.audit_enums import AuditEventType
-from app.domain.enums.file_enums import FileCategory
+from app.domain.enums.file_enums import FileCategory, UploadedFileStatus
 from app.domain.enums.mapping_enums import MappingStatus, NormalizationStatus, CanonicalField
 from app.domain.models.canonical_records import (
     BankRecord,
@@ -67,6 +69,8 @@ CATEGORY_MODEL_MAP = {
     FileCategory.CHARGEBEE_TRANSACTION_EXPORT: BillingTransactionRecord,
     FileCategory.BANK_STATEMENT: BankRecord,
     FileCategory.INVOICE_EXPORT: InvoiceRecord,
+    FileCategory.RAZORPAY_SETTLEMENT: SettlementRecord,
+    FileCategory.STRIPE_PAYOUT: SettlementRecord,
 }
 
 
@@ -99,12 +103,6 @@ class NormalizationService:
                 f"Column mapping for file {file_id} is not confirmed. "
                 "Confirm the mapping before running normalization."
             )
-        if col_mapping.normalization_status == NormalizationStatus.COMPLETED:
-            raise ConflictError(
-                f"Normalization for file {file_id} is already completed. "
-                "Re-confirm the mapping to re-run."
-            )
-
         uf = self.file_repo.get_by_id(file_id, workspace_id)
         if not uf:
             raise NotFoundError(f"File {file_id} not found.")
@@ -115,11 +113,12 @@ class NormalizationService:
                 f"Unknown file_category '{uf.file_category}' — cannot determine canonical table."
             )
 
-        # ── Mark as IN_PROGRESS ───────────────────────────────────────
-        self.mapping_repo.update_normalization_status(
-            col_mapping, NormalizationStatus.IN_PROGRESS
-        )
-        self.db.flush()
+        # Block concurrent runs — already in progress
+        if col_mapping.normalization_status == NormalizationStatus.IN_PROGRESS:
+            raise ConflictError(
+                f"Normalization for file {file_id} is already in progress. "
+                "Wait for it to complete before re-running."
+            )
 
         mapping: dict[str, str] = col_mapping.mapping_json
         from app.core.dates import utcnow
@@ -127,6 +126,26 @@ class NormalizationService:
         rows_inserted = 0
 
         try:
+            # Always delete any existing canonical rows first to avoid duplicates
+            logger.info(
+                "Clearing existing canonical rows before normalization",
+                file_id=str(file_id),
+                previous_status=col_mapping.normalization_status,
+            )
+            deleted = self.db.query(model_cls).filter(
+                model_cls.workspace_id == workspace_id,
+                model_cls.uploaded_file_id == file_id,
+            ).delete(synchronize_session=False)
+            if deleted > 0:
+                logger.info("Deleted existing canonical rows", count=deleted)
+            self.db.flush()
+
+            # ── Mark file + mapping as IN_PROGRESS ─────────────────────────
+            self.mapping_repo.update_normalization_status(
+                col_mapping, NormalizationStatus.IN_PROGRESS
+            )
+            self.file_repo.update_status(uf, UploadedFileStatus.NORMALIZING)
+            self.db.flush()
             # Process in batches of BATCH_SIZE
             offset = 0
             while True:
@@ -161,6 +180,7 @@ class NormalizationService:
             self.mapping_repo.update_normalization_status(
                 col_mapping, NormalizationStatus.COMPLETED
             )
+            self.file_repo.update_status(uf, UploadedFileStatus.NORMALIZED)
             self.audit_svc.log(
                 event_type=AuditEventType.NORMALIZATION_COMPLETED,
                 actor_user_id=user_id,
@@ -188,11 +208,20 @@ class NormalizationService:
             }
 
         except Exception as exc:
-            self.mapping_repo.update_normalization_status(
-                col_mapping,
-                NormalizationStatus.FAILED,
-                error=str(exc),
-            )
+            self.db.rollback()
+            # Reload column mapping and uploaded file to update after rollback
+            col_mapping = self.mapping_repo.get_by_file_id(file_id, workspace_id)
+            uf = self.file_repo.get_by_id(file_id, workspace_id)
+            
+            if col_mapping:
+                self.mapping_repo.update_normalization_status(
+                    col_mapping,
+                    NormalizationStatus.FAILED,
+                    error=str(exc),
+                )
+            if uf:
+                self.file_repo.update_status(uf, UploadedFileStatus.NORMALIZE_FAILED)
+            
             self.db.commit()
             logger.error("Normalization failed", file_id=str(file_id), error=str(exc))
             raise
@@ -225,19 +254,25 @@ class NormalizationService:
             "updated_by_user_id": user_id,
         }
 
-        for raw_col, canonical_field in mapping.items():
-            if canonical_field == CanonicalField.IGNORE:
+        for raw_col, canonical_field_str in mapping.items():
+            try:
+                cf = CanonicalField(canonical_field_str)
+            except ValueError:
                 continue
+                
+            if cf == CanonicalField.IGNORE:
+                continue
+                
             raw_val = raw_row.get(raw_col)
             if raw_val is None or raw_val == "":
                 continue
 
-            if canonical_field in AMOUNT_FIELDS:
-                canonical[canonical_field] = _safe_decimal(raw_val)
-            elif canonical_field in DATE_FIELDS:
-                canonical[canonical_field] = _safe_datetime(raw_val)
+            if cf in AMOUNT_FIELDS:
+                canonical[cf.value] = _safe_decimal(raw_val)
+            elif cf in DATE_FIELDS:
+                canonical[cf.value] = _safe_datetime(raw_val)
             else:
-                canonical[canonical_field] = str(raw_val).strip()
+                canonical[cf.value] = str(raw_val).strip()
 
         return canonical
 
@@ -272,7 +307,7 @@ class NormalizationService:
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def _safe_decimal(value: Any) -> Decimal | None:
+def _safe_decimal(value: Any) -> Optional[Decimal]:
     """Parse any string/number to Decimal. Returns None on failure."""
     if value is None:
         return None
@@ -301,7 +336,7 @@ DATE_FORMATS = [
 ]
 
 
-def _safe_datetime(value: Any) -> datetime | None:
+def _safe_datetime(value: Any) -> Optional[datetime]:
     """Parse a date/time string to a timezone-aware datetime. Returns None on failure."""
     if value is None:
         return None

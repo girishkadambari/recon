@@ -33,34 +33,29 @@ def explain_exception(
     amount: str,
     currency: str,
     record_data: dict[str, Any],
+    severity: str = "MEDIUM",
+    **kwargs: Any,
 ) -> dict[str, Any]:
     """
     Ask Claude to explain why a specific exception occurred.
-
-    Returns:
-        {
-            "explanation": str,
-            "probable_cause": str,
-            "recommended_action": str,
-            "confidence": "HIGH" | "MEDIUM" | "LOW"
-        }
     """
     prompt_template = PROMPT_PATH.read_text(encoding="utf-8")
 
-    replacements = {
-        "{run_name}": run_name,
-        "{source_category}": source_category,
-        "{target_category}": target_category,
-        "{match_rate_pct}": str(match_rate_pct),
-        "{file_role}": file_role,
-        "{reason_code}": reason_code,
-        "{amount}": amount,
-        "{currency}": currency,
-        "{record_data}": json.dumps(record_data, default=str, indent=2, ensure_ascii=False),
-    }
-    prompt = prompt_template
-    for placeholder, value in replacements.items():
-        prompt = prompt.replace(placeholder, value)
+    # Format record data as JSON string for the prompt
+    record_str = json.dumps(record_data, default=str, indent=2, ensure_ascii=False)
+
+    prompt = prompt_template.format(
+        run_name=run_name,
+        source_category=source_category,
+        target_category=target_category,
+        match_rate_pct=str(match_rate_pct),
+        file_role=file_role,
+        reason_code=reason_code,
+        severity=severity,
+        amount=amount,
+        currency=currency,
+        record_data=record_str,
+    )
 
     logger.info(
         "Requesting AI exception explanation",
@@ -127,22 +122,20 @@ def generate_run_summary(
         for strategy, count in strategy_breakdown.items()
     ) or "No matches found."
 
-    replacements = {
-        "{run_name}": run_name,
-        "{completed_at}": completed_at,
-        "{source_category}": source_category,
-        "{target_category}": target_category,
-        "{total_source_rows}": str(total_source_rows),
-        "{total_target_rows}": str(total_target_rows),
-        "{matched_count}": str(matched_count),
-        "{match_rate_pct}": str(match_rate_pct),
-        "{exception_count}": str(exception_count),
-        "{exception_breakdown}": exc_breakdown_str,
-        "{strategy_breakdown}": strategy_breakdown_str,
-    }
-    prompt = prompt_template
-    for placeholder, value in replacements.items():
-        prompt = prompt.replace(placeholder, value)
+    # cap breakdowns
+    prompt = prompt_template.format(
+        run_name=run_name,
+        completed_at=completed_at,
+        source_category=source_category,
+        target_category=target_category,
+        total_source_rows=str(total_source_rows),
+        total_target_rows=str(total_target_rows),
+        matched_count=str(matched_count),
+        match_rate_pct=str(match_rate_pct),
+        exception_count=str(exception_count),
+        exception_breakdown=exc_breakdown_str,
+        strategy_breakdown=strategy_breakdown_str,
+    )
 
     logger.info(
         "Requesting AI run summary",

@@ -1,0 +1,7 @@
+payment_id,order_id,amount,fee,tax,net,currency,status,created_at
+pay_TF001,ord_TF001,1000.00,23.60,4.25,972.15,INR,captured,2024-03-01 10:00:00
+pay_TF002,ord_TF002,2500.00,59.00,10.62,2430.38,INR,captured,2024-03-01 11:30:00
+pay_TF003,ord_TF003,500.00,11.80,2.12,486.08,INR,captured,2024-03-02 09:15:00
+pay_TF004,ord_TF004,1200.00,28.32,5.10,1166.58,INR,captured,2024-03-02 14:00:00
+pay_TF005,ord_TF005,3000.00,70.80,12.74,2916.46,INR,failed,2024-03-03 10:00:00
+pay_TF006,ord_TF006,150.00,3.54,0.64,145.82,INR,captured,2024-03-03 11:00:00

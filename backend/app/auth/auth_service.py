@@ -2,6 +2,7 @@
 AuthService — handles the full login/signup flow.
 Business logic only — no HTTP concerns here.
 """
+from typing import Optional
 import uuid
 
 import structlog
@@ -30,10 +31,10 @@ class AuthService:
         self,
         provider_subject: str,
         email: str,
-        full_name: str | None,
-        avatar_url: str | None,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+        full_name: Optional[str],
+        avatar_url: Optional[str],
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
     ) -> dict:
         """
         Find or create user by Google provider_subject.
@@ -158,7 +159,7 @@ class AuthService:
     def handle_dev_login(
         self,
         email: str,
-        full_name: str | None = None,
+        full_name: Optional[str] = None,
     ) -> dict:
         """
         Local-only dev login — creates or finds user without Google OAuth.

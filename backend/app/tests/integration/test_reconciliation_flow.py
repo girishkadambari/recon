@@ -107,8 +107,8 @@ class TestReconciliationFlow:
         src_id, tgt_id = file_ids[0]["id"], file_ids[1]["id"]
 
         resp = client.post(
-            "/api/reconciliations",
-            json={"name": "test run", "source_file_id": src_id, "target_file_id": tgt_id},
+            "/api/reconciliation-runs",
+            json={"name": "test run", "uploaded_file_ids": [src_id, tgt_id]},
             headers=user["headers"],
         )
         assert resp.status_code == 409  # not normalized yet
@@ -122,8 +122,8 @@ class TestReconciliationFlow:
 
         # Create run
         resp = client.post(
-            "/api/reconciliations",
-            json={"name": "Jan 2024 Recon", "source_file_id": src_id, "target_file_id": tgt_id},
+            "/api/reconciliation-runs",
+            json={"name": "Jan 2024 Recon", "uploaded_file_ids": [src_id, tgt_id]},
             headers=user["headers"],
         )
         assert resp.status_code == 201
@@ -131,7 +131,7 @@ class TestReconciliationFlow:
         assert resp.json()["data"]["status"] == "PENDING"
 
         # Execute
-        resp = client.post(f"/api/reconciliations/{run_id}/execute", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/run", headers=user["headers"])
         assert resp.status_code == 200, resp.text
         data = resp.json()["data"]
         assert data["status"] == "COMPLETED"
@@ -139,17 +139,17 @@ class TestReconciliationFlow:
         assert data["exception_count"] >= 2  # pay_003 (failed) + BANK_EXTRA
 
         # List runs
-        resp = client.get("/api/reconciliations", headers=user["headers"])
+        resp = client.get("/api/reconciliation-runs", headers=user["headers"])
         assert resp.status_code == 200
         assert len(resp.json()["data"]) >= 1
 
         # Get run
-        resp = client.get(f"/api/reconciliations/{run_id}", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}", headers=user["headers"])
         assert resp.status_code == 200
         assert resp.json()["data"]["match_rate_pct"] > 50
 
         # Matches
-        resp = client.get(f"/api/reconciliations/{run_id}/matches", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/matches", headers=user["headers"])
         assert resp.status_code == 200
         matches = resp.json()["data"]
         assert len(matches) >= 3
@@ -157,7 +157,7 @@ class TestReconciliationFlow:
         # Review a match
         match_id = matches[0]["id"]
         resp = client.post(
-            f"/api/reconciliations/{run_id}/matches/{match_id}/review",
+            f"/api/reconciliation-runs/{run_id}/matches/{match_id}/review",
             json={"action": "APPROVED", "note": "Looks correct"},
             headers=user["headers"],
         )
@@ -165,7 +165,7 @@ class TestReconciliationFlow:
         assert resp.json()["data"]["status"] == "APPROVED"
 
         # Exceptions
-        resp = client.get(f"/api/reconciliations/{run_id}/exceptions", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/exceptions", headers=user["headers"])
         assert resp.status_code == 200
         exceptions = resp.json()["data"]
         assert len(exceptions) >= 1
@@ -173,7 +173,7 @@ class TestReconciliationFlow:
         # Resolve an exception
         exc_id = exceptions[0]["id"]
         resp = client.post(
-            f"/api/reconciliations/{run_id}/exceptions/{exc_id}/resolve",
+            f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/resolve",
             json={"status": "WAIVED", "note": "Known difference"},
             headers=user["headers"],
         )
@@ -186,13 +186,13 @@ class TestReconciliationFlow:
         tgt_id = _full_pipeline(client, user, BANK_CSV, "BANK_STATEMENT", MOCK_BANK_MAPPING)
 
         resp = client.post(
-            "/api/reconciliations",
-            json={"name": "Dbl Run", "source_file_id": src_id, "target_file_id": tgt_id},
+            "/api/reconciliation-runs",
+            json={"name": "Dbl Run", "uploaded_file_ids": [src_id, tgt_id]},
             headers=user["headers"],
         )
         run_id = resp.json()["data"]["id"]
-        client.post(f"/api/reconciliations/{run_id}/execute", headers=user["headers"])
-        resp2 = client.post(f"/api/reconciliations/{run_id}/execute", headers=user["headers"])
+        client.post(f"/api/reconciliation-runs/{run_id}/run", headers=user["headers"])
+        resp2 = client.post(f"/api/reconciliation-runs/{run_id}/run", headers=user["headers"])
         assert resp2.status_code == 409
 
     def test_cross_workspace_run_not_visible(self, client: TestClient):
@@ -200,13 +200,13 @@ class TestReconciliationFlow:
         bob = _login(client, f"bob_recon_{uuid.uuid4().hex[:6]}@x.com")
 
         # Alice can't see Bob's runs (if Bob had any)
-        resp = client.get("/api/reconciliations", headers=alice["headers"])
+        resp = client.get("/api/reconciliation-runs", headers=alice["headers"])
         assert resp.status_code == 200
         for r in resp.json()["data"]:
             assert r["workspace_id"] == alice["workspace_id"]
 
     def test_run_without_auth_returns_401(self, client: TestClient):
-        resp = client.post("/api/reconciliations", json={
-            "name": "x", "source_file_id": str(uuid.uuid4()), "target_file_id": str(uuid.uuid4())
+        resp = client.post("/api/reconciliation-runs", json={
+            "name": "x", "uploaded_file_ids": [str(uuid.uuid4()), str(uuid.uuid4())]
         })
         assert resp.status_code == 401

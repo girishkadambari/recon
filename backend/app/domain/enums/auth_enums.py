@@ -1,26 +1,26 @@
 """
 Auth-related enums.
 """
-from enum import StrEnum
+from enum import Enum
 
 
-class AuthProvider(StrEnum):
+class AuthProvider(str, Enum):
     GOOGLE = "GOOGLE"
 
 
-class UserStatus(StrEnum):
+class UserStatus(str, Enum):
     ACTIVE = "ACTIVE"
     DISABLED = "DISABLED"
     DELETED = "DELETED"
 
 
-class WorkspaceStatus(StrEnum):
+class WorkspaceStatus(str, Enum):
     ACTIVE = "ACTIVE"
     SUSPENDED = "SUSPENDED"
     DELETED = "DELETED"
 
 
-class WorkspaceRole(StrEnum):
+class WorkspaceRole(str, Enum):
     OWNER = "OWNER"
     ADMIN = "ADMIN"
     MEMBER = "MEMBER"
@@ -28,7 +28,7 @@ class WorkspaceRole(StrEnum):
     VIEWER = "VIEWER"
 
 
-class WorkspaceMemberStatus(StrEnum):
+class WorkspaceMemberStatus(str, Enum):
     ACTIVE = "ACTIVE"
     INVITED = "INVITED"
     REMOVED = "REMOVED"

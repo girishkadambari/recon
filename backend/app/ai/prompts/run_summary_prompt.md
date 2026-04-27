@@ -32,12 +32,12 @@ You are a financial reporting assistant. Generate a concise, professional summar
 ## Required JSON Output
 
 ```json
-{
+{{
   "headline": "One-line headline summary (e.g., 'Jan 2024 Stripe Reconciliation: 94% match rate with 3 open exceptions')",
   "summary": "3-5 sentence executive summary.",
   "risk_level": "LOW | MEDIUM | HIGH | CRITICAL",
   "key_findings": ["Finding 1", "Finding 2", "Finding 3"],
   "recommended_actions": ["Action 1", "Action 2"],
   "requires_immediate_attention": true
-}
+}}
 ```

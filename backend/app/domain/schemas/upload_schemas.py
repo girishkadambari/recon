@@ -1,6 +1,8 @@
 """
 Upload schemas — request/response Pydantic models for file upload endpoints.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 from typing import Any
@@ -13,13 +15,13 @@ class UploadedFileResponse(BaseModel):
     workspace_id: uuid.UUID
     file_name: str
     file_category: str
-    mime_type: str | None
-    file_size_bytes: int | None
+    mime_type: Optional[str]
+    file_size_bytes: Optional[int]
     status: str
-    row_count: int | None
-    parse_error: str | None
+    row_count: Optional[int]
+    parse_error: Optional[str]
     created_at: datetime
-    uploaded_by_user_id: uuid.UUID | None
+    uploaded_by_user_id: Optional[uuid.UUID]
 
     model_config = {"from_attributes": True}
 
@@ -38,7 +40,7 @@ class SourceRecordResponse(BaseModel):
     row_number: int
     raw_data_json: dict[str, Any]
     parse_status: str
-    parse_error: str | None
+    parse_error: Optional[str]
 
     model_config = {"from_attributes": True}
 

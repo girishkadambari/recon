@@ -10,7 +10,7 @@ Flow:
   6. Download: stream file bytes directly from S3 (no presigned URL needed for MVP)
 """
 import uuid
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import Any
 
 import structlog
@@ -170,6 +170,10 @@ class ExportService:
         jobs = self.export_repo.list_for_run(run_id, workspace_id)
         return [_job_to_dict(j) for j in jobs]
 
+    def list_all_jobs(self, workspace_id: uuid.UUID) -> list[dict[str, Any]]:
+        jobs = self.export_repo.list_all(workspace_id)
+        return [_job_to_dict(j) for j in jobs]
+
     # ── Private helpers ───────────────────────────────────────────────
 
     def _load_matches(
@@ -206,7 +210,7 @@ def _build_export_storage_key(
     run_name: str,
 ) -> tuple[str, str]:
     safe_name = run_name.replace(" ", "_").replace("/", "-")[:50]
-    ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     file_name = f"recon_{safe_name}_{ts}.xlsx"
     storage_key = f"exports/{workspace_id}/{run_id}/{job_id}/{file_name}"
     return storage_key, file_name

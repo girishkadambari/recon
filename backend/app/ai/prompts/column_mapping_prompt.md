@@ -70,14 +70,14 @@ Your job is to map each raw column name to the correct **canonical field** from 
 ## Required JSON Output Format
 
 ```json
-{
-  "mapping": {
+{{
+  "mapping": {{
     "<raw_column_name>": "<canonical_field>",
     "<raw_column_name>": "<canonical_field>"
-  },
+  }},
   "confidence_score": 85,
   "notes": "Brief explanation of any uncertain mappings"
-}
+}}
 ```
 
 The `confidence_score` is 0-100. Use:

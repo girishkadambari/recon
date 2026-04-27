@@ -1,6 +1,8 @@
 """
 WorkspaceService — workspace and membership business logic.
 """
+from __future__ import annotations
+from typing import Optional
 import re
 import uuid
 
@@ -38,6 +40,34 @@ class WorkspaceService:
             slug=slug,
         )
 
+    def update_workspace(
+        self,
+        workspace_id: uuid.UUID,
+        name: str,
+        updated_by_user_id: uuid.UUID,
+    ) -> Workspace:
+        ws = self.repo.update(
+            workspace_id=workspace_id,
+            name=name,
+            updated_by_user_id=updated_by_user_id,
+        )
+        if not ws:
+            raise NotFoundError(f"Workspace {workspace_id} not found.")
+        return ws
+
+    def delete_workspace(
+        self,
+        workspace_id: uuid.UUID,
+        updated_by_user_id: uuid.UUID,
+    ) -> Workspace:
+        ws = self.repo.delete(
+            workspace_id=workspace_id,
+            updated_by_user_id=updated_by_user_id,
+        )
+        if not ws:
+            raise NotFoundError(f"Workspace {workspace_id} not found.")
+        return ws
+
     def _unique_slug(self, base: str) -> str:
         slug = base
         counter = 1
@@ -62,7 +92,7 @@ class WorkspaceService:
             raise ForbiddenError("You do not have access to this workspace.")
         return member
 
-    def get_member_role(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> str | None:
+    def get_member_role(self, workspace_id: uuid.UUID, user_id: uuid.UUID) -> Optional[str]:
         member = self.repo.get_member(workspace_id, user_id)
         return member.role if member else None
 

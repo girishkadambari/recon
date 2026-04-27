@@ -1,19 +1,21 @@
 """
 File ingestion enums.
 """
-from enum import StrEnum
+from enum import Enum
 
 
-class FileCategory(StrEnum):
+class FileCategory(str, Enum):
     STRIPE_REPORT = "STRIPE_REPORT"
     RAZORPAY_REPORT = "RAZORPAY_REPORT"
     CHARGEBEE_INVOICE_EXPORT = "CHARGEBEE_INVOICE_EXPORT"
     CHARGEBEE_TRANSACTION_EXPORT = "CHARGEBEE_TRANSACTION_EXPORT"
     BANK_STATEMENT = "BANK_STATEMENT"
     INVOICE_EXPORT = "INVOICE_EXPORT"
+    RAZORPAY_SETTLEMENT = "RAZORPAY_SETTLEMENT"
+    STRIPE_PAYOUT = "STRIPE_PAYOUT"
 
 
-class UploadedFileStatus(StrEnum):
+class UploadedFileStatus(str, Enum):
     UPLOADED = "UPLOADED"
     PARSING = "PARSING"
     PARSED = "PARSED"
@@ -24,6 +26,6 @@ class UploadedFileStatus(StrEnum):
     ARCHIVED = "ARCHIVED"
 
 
-class SourceRecordStatus(StrEnum):
+class SourceRecordStatus(str, Enum):
     PARSED = "PARSED"
     INVALID = "INVALID"

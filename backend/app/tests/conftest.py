@@ -57,12 +57,22 @@ def test_engine():
 
 @pytest.fixture()
 def db(test_engine) -> Session:
-    """Each test gets its own session; rolled back after the test."""
-    TestSession = sessionmaker(bind=test_engine, autocommit=False, autoflush=False)
-    session = TestSession()
+    """
+    Each test gets its own session wrapped in a transaction.
+    Even if services call session.commit() internally, 
+    the outer transaction is rolled back, ensuring strictly isolated tests.
+    """
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    
+    # We use join_transaction=True or equivalent to keep session within our test transaction
+    session = Session(bind=connection)
+    
     yield session
-    session.rollback()
+    
     session.close()
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture()

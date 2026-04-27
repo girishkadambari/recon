@@ -2,6 +2,7 @@
 Core error types and error response structure.
 All business errors should extend ReconError.
 """
+from typing import Optional
 from typing import Any
 
 
@@ -14,8 +15,8 @@ class ReconError(Exception):
     def __init__(
         self,
         message: str,
-        code: str | None = None,
-        details: dict[str, Any] | None = None,
+        code: Optional[str] = None,
+        details:Optional[ dict[str, Any] ] = None,
     ):
         self.message = message
         self.code = code or self.__class__.code

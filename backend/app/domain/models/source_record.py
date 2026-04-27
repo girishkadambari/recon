@@ -5,6 +5,8 @@ Table: source_records
 One row per parsed row from an uploaded file.
 raw_data_json stores the original row as-is (no transformation).
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy import ForeignKey, Integer, String, Text
@@ -43,7 +45,7 @@ class SourceRecord(
         nullable=False,
         default=SourceRecordStatus.PARSED,
     )
-    parse_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    parse_error: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"<SourceRecord id={self.id} file={self.uploaded_file_id} row={self.row_number}>"

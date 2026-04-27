@@ -1,0 +1,10 @@
+meta {
+  name: List Exceptions
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/reconciliation-runs/{{run_id}}/exceptions
+  auth: inherit
+}

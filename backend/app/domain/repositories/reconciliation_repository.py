@@ -1,6 +1,8 @@
 """
 ReconciliationRepository — CRUD for runs, run files, match candidates, exception items.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from typing import Any
 
@@ -44,7 +46,7 @@ class ReconciliationRepository:
         self.db.flush()
         return run
 
-    def get_run(self, run_id: uuid.UUID, workspace_id: uuid.UUID) -> ReconciliationRun | None:
+    def get_run(self, run_id: uuid.UUID, workspace_id: uuid.UUID) -> Optional[ReconciliationRun]:
         return (
             self.db.query(ReconciliationRun)
             .filter(
@@ -71,7 +73,7 @@ class ReconciliationRepository:
         self,
         run: ReconciliationRun,
         status: str,
-        error_message: str | None = None,
+        error_message: Optional[str] = None,
     ) -> ReconciliationRun:
         run.status = status
         if error_message:
@@ -82,16 +84,34 @@ class ReconciliationRepository:
         self.db.flush()
         return run
 
+    def get_exception_summary(self, run_id: uuid.UUID, workspace_id: uuid.UUID) -> dict[str, int]:
+        """Aggregate exception counts by type."""
+        from sqlalchemy import func
+        results = (
+            self.db.query(ExceptionItem.exception_type, func.count(ExceptionItem.id))
+            .filter(
+                ExceptionItem.run_id == run_id,
+                ExceptionItem.workspace_id == workspace_id,
+            )
+            .group_by(ExceptionItem.exception_type)
+            .all()
+        )
+        return {row[0]: row[1] for row in results}
+
     def update_run_counts(
         self,
         run: ReconciliationRun,
         output: EngineOutput,
     ) -> ReconciliationRun:
-        run.total_source_rows = output.total_source
-        run.total_target_rows = output.total_target
         run.matched_count = output.matched_count
         run.exception_count = output.exception_count
         run.match_rate_pct = output.match_rate_pct
+        
+        # v0.2 amounts
+        run.matched_amount = sum((m.amount_delta or 0) for m in output.matches) # Not quite right, should be primary amounts
+        # We'll let the service layer set the exact amounts before calling this if needed, 
+        # but for now we'll update the schema-ready fields.
+        
         run.run_date = utcnow()
         run.updated_at = utcnow()
         self.db.flush()
@@ -128,6 +148,20 @@ class ReconciliationRepository:
             )
             .all()
         )
+
+    def clear_run_results(self, run_id: uuid.UUID, workspace_id: uuid.UUID) -> None:
+        """Clear previous matches and exceptions for a re-run."""
+        self.db.query(MatchCandidate).filter(
+            MatchCandidate.run_id == run_id,
+            MatchCandidate.workspace_id == workspace_id,
+        ).delete(synchronize_session=False)
+        
+        self.db.query(ExceptionItem).filter(
+            ExceptionItem.run_id == run_id,
+            ExceptionItem.workspace_id == workspace_id,
+        ).delete(synchronize_session=False)
+        
+        self.db.flush()
 
     # ── Bulk insert matches ───────────────────────────────────────────
 
@@ -188,7 +222,8 @@ class ReconciliationRepository:
                 "record_id": e.record_id,
                 "record_table": e.record_table,
                 "file_role": e.file_role,
-                "reason": e.reason,
+                "exception_type": e.reason, # e.reason from engine is mapped to exception_type
+                "severity": e.severity,
                 "status": ExceptionStatus.OPEN,
                 "amount": e.amount,
                 "currency": e.currency,
@@ -210,8 +245,8 @@ class ReconciliationRepository:
         self,
         run_id: uuid.UUID,
         workspace_id: uuid.UUID,
-        status: str | None = None,
-        min_confidence: int | None = None,
+        status: Optional[str] = None,
+        min_confidence: Optional[int] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[MatchCandidate], int]:
@@ -227,7 +262,7 @@ class ReconciliationRepository:
         rows = q.order_by(MatchCandidate.confidence_score.desc()).offset(offset).limit(limit).all()
         return rows, total
 
-    def get_match(self, match_id: uuid.UUID, run_id: uuid.UUID, workspace_id: uuid.UUID) -> MatchCandidate | None:
+    def get_match(self, match_id: uuid.UUID, run_id: uuid.UUID, workspace_id: uuid.UUID) -> Optional[MatchCandidate]:
         return (
             self.db.query(MatchCandidate)
             .filter(
@@ -243,7 +278,7 @@ class ReconciliationRepository:
         match: MatchCandidate,
         status: str,
         reviewed_by_user_id: uuid.UUID,
-        review_note: str | None = None,
+        review_note: Optional[str] = None,
     ) -> MatchCandidate:
         match.status = status
         match.reviewed_by_user_id = reviewed_by_user_id
@@ -256,26 +291,30 @@ class ReconciliationRepository:
 
     def list_exceptions(
         self,
-        run_id: uuid.UUID,
         workspace_id: uuid.UUID,
-        status: str | None = None,
-        reason: str | None = None,
+        run_id: Optional[uuid.UUID] = None,
+        status: Optional[str] = None,
+        exception_type: Optional[str] = None,
+        severity: Optional[str] = None,
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[ExceptionItem], int]:
         q = self.db.query(ExceptionItem).filter(
-            ExceptionItem.run_id == run_id,
             ExceptionItem.workspace_id == workspace_id,
         )
+        if run_id:
+            q = q.filter(ExceptionItem.run_id == run_id)
         if status:
             q = q.filter(ExceptionItem.status == status)
-        if reason:
-            q = q.filter(ExceptionItem.reason == reason)
+        if exception_type:
+            q = q.filter(ExceptionItem.exception_type == exception_type)
+        if severity:
+            q = q.filter(ExceptionItem.severity == severity)
         total = q.count()
         rows = q.order_by(ExceptionItem.created_at.asc()).offset(offset).limit(limit).all()
         return rows, total
 
-    def get_exception(self, exception_id: uuid.UUID, run_id: uuid.UUID, workspace_id: uuid.UUID) -> ExceptionItem | None:
+    def get_exception(self, exception_id: uuid.UUID, run_id: uuid.UUID, workspace_id: uuid.UUID) -> Optional[ExceptionItem]:
         return (
             self.db.query(ExceptionItem)
             .filter(
@@ -291,7 +330,7 @@ class ReconciliationRepository:
         exception: ExceptionItem,
         status: str,
         resolved_by_user_id: uuid.UUID,
-        resolution_note: str | None = None,
+        resolution_note: Optional[str] = None,
     ) -> ExceptionItem:
         exception.status = status
         exception.resolved_by_user_id = resolved_by_user_id

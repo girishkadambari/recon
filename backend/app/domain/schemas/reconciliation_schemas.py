@@ -1,6 +1,8 @@
 """
 Reconciliation schemas — Pydantic v2 request/response models.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -15,19 +17,27 @@ class CreateRunRequest(BaseModel):
     target_file_id: uuid.UUID
 
 
+class CreateRunRequestMulti(BaseModel):
+    name: str
+    uploaded_file_ids: list[uuid.UUID]
+
+
 class ReconciliationRunResponse(BaseModel):
     id: uuid.UUID
     workspace_id: uuid.UUID
     name: str
     status: str
-    run_date: datetime | None
-    completed_at: datetime | None
+    run_date: Optional[datetime]
+    completed_at: Optional[datetime]
     total_source_rows: int
     total_target_rows: int
     matched_count: int
     exception_count: int
-    match_rate_pct: int | None
-    error_message: str | None
+    match_rate_pct: Optional[int]
+    error_message: Optional[str]
+    matched_amount: Decimal
+    unmatched_amount: Decimal
+    exception_summary:Optional[ dict[str, int] ] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -43,16 +53,16 @@ class MatchCandidateResponse(BaseModel):
     confidence_score: int
     match_strategy: str
     status: str
-    amount_delta: Decimal | None
-    date_delta_days: int | None
-    review_note: str | None
+    amount_delta: Optional[Decimal]
+    date_delta_days: Optional[int]
+    review_note: Optional[str]
 
     model_config = {"from_attributes": True}
 
 
 class ReviewMatchRequest(BaseModel):
     action: str   # APPROVED or REJECTED
-    note: str | None = None
+    note: Optional[str] = None
 
 
 class ExceptionItemResponse(BaseModel):
@@ -61,17 +71,20 @@ class ExceptionItemResponse(BaseModel):
     record_id: uuid.UUID
     record_table: str
     file_role: str
-    reason: str
+    exception_type: str
+    severity: str
     status: str
-    amount: Decimal | None
+    amount: Optional[Decimal]
     currency: str
-    details_json: dict[str, Any] | None
-    ai_explanation: str | None
-    resolution_note: str | None
+    details_json:Optional[ dict[str, Any] ]
+    related_record_refs:Optional[ dict[str, Any] ] = None
+    suggested_action: Optional[str] = None
+    ai_explanation: Optional[str]
+    resolution_note: Optional[str]
 
     model_config = {"from_attributes": True}
 
 
 class ResolveExceptionRequest(BaseModel):
     status: str    # RESOLVED or WAIVED
-    note: str | None = None
+    note: Optional[str] = None

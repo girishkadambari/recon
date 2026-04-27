@@ -82,13 +82,13 @@ def _run_reconciliation(client, user):
     src_id = _full_pipeline(client, user, STRIPE_CSV, "STRIPE_REPORT", MOCK_STRIPE_MAPPING)
     tgt_id = _full_pipeline(client, user, BANK_CSV, "BANK_STATEMENT", MOCK_BANK_MAPPING)
     resp = client.post(
-        "/api/reconciliations",
-        json={"name": f"Recon {uuid.uuid4().hex[:4]}", "source_file_id": src_id, "target_file_id": tgt_id},
+        "/api/reconciliation-runs",
+        json={"name": f"Recon {uuid.uuid4().hex[:4]}", "uploaded_file_ids": [src_id, tgt_id]},
         headers=user["headers"],
     )
     assert resp.status_code == 201
     run_id = resp.json()["data"]["id"]
-    resp = client.post(f"/api/reconciliations/{run_id}/execute", headers=user["headers"])
+    resp = client.post(f"/api/reconciliation-runs/{run_id}/run", headers=user["headers"])
     assert resp.status_code == 200
     return run_id
 
@@ -102,14 +102,14 @@ class TestExceptionExplanations:
         run_id = _run_reconciliation(client, user)
 
         # Get first open exception
-        resp = client.get(f"/api/reconciliations/{run_id}/exceptions", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/exceptions", headers=user["headers"])
         exceptions = resp.json()["data"]
         assert len(exceptions) >= 1
         exc_id = exceptions[0]["id"]
 
         # Explain it
         resp = client.post(
-            f"/api/reconciliations/{run_id}/exceptions/{exc_id}/explain",
+            f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/explain",
             headers=user["headers"],
         )
         assert resp.status_code == 200, resp.text
@@ -126,15 +126,15 @@ class TestExceptionExplanations:
         user = _login(client, f"explain2_{uuid.uuid4().hex[:6]}@x.com")
         run_id = _run_reconciliation(client, user)
 
-        resp = client.get(f"/api/reconciliations/{run_id}/exceptions", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/exceptions", headers=user["headers"])
         exc_id = resp.json()["data"][0]["id"]
 
         # First call — generates
-        client.post(f"/api/reconciliations/{run_id}/exceptions/{exc_id}/explain", headers=user["headers"])
+        client.post(f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/explain", headers=user["headers"])
         # Second call — should use cache (no new AI call)
         mock_ai.reset_mock()
         resp = client.post(
-            f"/api/reconciliations/{run_id}/exceptions/{exc_id}/explain",
+            f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/explain",
             headers=user["headers"],
         )
         assert resp.status_code == 200
@@ -147,14 +147,14 @@ class TestExceptionExplanations:
         user = _login(client, f"explain3_{uuid.uuid4().hex[:6]}@x.com")
         run_id = _run_reconciliation(client, user)
 
-        resp = client.get(f"/api/reconciliations/{run_id}/exceptions", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/exceptions", headers=user["headers"])
         exc_id = resp.json()["data"][0]["id"]
 
-        client.post(f"/api/reconciliations/{run_id}/exceptions/{exc_id}/explain", headers=user["headers"])
+        client.post(f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/explain", headers=user["headers"])
         mock_ai.reset_mock()
 
         resp = client.post(
-            f"/api/reconciliations/{run_id}/exceptions/{exc_id}/explain?force_refresh=true",
+            f"/api/reconciliation-runs/{run_id}/exceptions/{exc_id}/explain?force_refresh=true",
             headers=user["headers"],
         )
         assert resp.status_code == 200
@@ -167,7 +167,7 @@ class TestExceptionExplanations:
         user = _login(client, f"batch_{uuid.uuid4().hex[:6]}@x.com")
         run_id = _run_reconciliation(client, user)
 
-        resp = client.post(f"/api/reconciliations/{run_id}/explain-all", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/explain-all", headers=user["headers"])
         assert resp.status_code == 200, resp.text
         data = resp.json()["data"]
         assert data["explained"] >= 1
@@ -180,11 +180,11 @@ class TestExceptionExplanations:
         run_id = _run_reconciliation(client, user)
 
         # First batch
-        client.post(f"/api/reconciliations/{run_id}/explain-all", headers=user["headers"])
+        client.post(f"/api/reconciliation-runs/{run_id}/explain-all", headers=user["headers"])
         mock_ai.reset_mock()
 
         # Second batch — all should be skipped
-        resp = client.post(f"/api/reconciliations/{run_id}/explain-all", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/explain-all", headers=user["headers"])
         assert resp.status_code == 200
         data = resp.json()["data"]
         assert data["explained"] == 0
@@ -196,7 +196,7 @@ class TestExceptionExplanations:
         user = _login(client, f"summary_{uuid.uuid4().hex[:6]}@x.com")
         run_id = _run_reconciliation(client, user)
 
-        resp = client.get(f"/api/reconciliations/{run_id}/summary", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/summary", headers=user["headers"])
         assert resp.status_code == 200, resp.text
         data = resp.json()["data"]
         assert data["run_id"] == run_id
@@ -212,18 +212,18 @@ class TestExceptionExplanations:
         tgt_id = _full_pipeline(client, user, BANK_CSV, "BANK_STATEMENT", MOCK_BANK_MAPPING)
 
         resp = client.post(
-            "/api/reconciliations",
-            json={"name": f"Pending Run", "source_file_id": src_id, "target_file_id": tgt_id},
+            "/api/reconciliation-runs",
+            json={"name": f"Pending Run", "uploaded_file_ids": [src_id, tgt_id]},
             headers=user["headers"],
         )
         run_id = resp.json()["data"]["id"]
 
-        resp = client.post(f"/api/reconciliations/{run_id}/explain-all", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/explain-all", headers=user["headers"])
         assert resp.status_code == 409
 
     def test_explain_without_auth_returns_401(self, client: TestClient):
         resp = client.post(
-            f"/api/reconciliations/{uuid.uuid4()}/exceptions/{uuid.uuid4()}/explain"
+            f"/api/reconciliation-runs/{uuid.uuid4()}/exceptions/{uuid.uuid4()}/explain"
         )
         assert resp.status_code == 401
 
@@ -232,7 +232,7 @@ class TestExceptionExplanations:
         run_id = _run_reconciliation(client, user)
 
         resp = client.post(
-            f"/api/reconciliations/{run_id}/exceptions/{uuid.uuid4()}/explain",
+            f"/api/reconciliation-runs/{run_id}/exceptions/{uuid.uuid4()}/explain",
             headers=user["headers"],
         )
         assert resp.status_code == 404

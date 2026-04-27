@@ -1,6 +1,7 @@
 """
 Parser factory — select the right parser based on file extension / MIME type.
 """
+from typing import Optional
 from app.integrations.parsers.base_parser import BaseParser
 from app.core.errors import UnsupportedFileTypeError
 
@@ -14,7 +15,7 @@ SUPPORTED_MIME_TYPES = {
 }
 
 
-def get_parser(file_name: str, mime_type: str | None = None) -> BaseParser:
+def get_parser(file_name: str, mime_type: Optional[str] = None) -> BaseParser:
     """
     Return the appropriate parser based on file name extension.
     Raises UnsupportedFileTypeError for unknown types.
@@ -48,7 +49,7 @@ def _extract_extension(file_name: str) -> str:
     return ext.lower()
 
 
-def is_supported(file_name: str, mime_type: str | None = None) -> bool:
+def is_supported(file_name: str, mime_type: Optional[str] = None) -> bool:
     try:
         get_parser(file_name, mime_type)
         return True

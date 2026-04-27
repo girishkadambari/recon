@@ -4,6 +4,8 @@ Table: audit_events
 
 Immutable — never updated, only inserted.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 
@@ -17,23 +19,23 @@ from app.domain.models.base import Base, UUIDPrimaryKeyMixin
 class AuditEvent(UUIDPrimaryKeyMixin, Base):
     __tablename__ = "audit_events"
 
-    workspace_id: Mapped[uuid.UUID | None] = mapped_column(
+    workspace_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         nullable=True,
         index=True,
     )
-    actor_user_id: Mapped[uuid.UUID | None] = mapped_column(
+    actor_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
     event_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    entity_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
-    metadata_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
-    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
+    entity_type: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
+    entity_id: Mapped[Optional[uuid.UUID ]] = mapped_column(UUID(as_uuid=True), nullable=True)
+    metadata_json: Mapped[Optional[dict ]] = mapped_column(JSONB, nullable=True)
+    ip_address: Mapped[Optional[str ]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

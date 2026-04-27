@@ -1,0 +1,6 @@
+invoice_id,customer_id,customer_email,amount,currency,status,created_at,due_date
+inv_TF001,cust_001,cust1@example.com,1000.00,INR,paid,2024-02-28,2024-03-05
+inv_TF002,cust_002,cust2@example.com,2500.00,INR,paid,2024-02-28,2024-03-05
+inv_TF003,cust_003,cust3@example.com,500.00,INR,pending,2024-03-01,2024-03-06
+inv_TF004,cust_004,cust4@example.com,1200.00,INR,pending,2024-03-01,2024-03-06
+inv_TF006,cust_006,cust6@example.com,150.00,INR,paid,2024-03-02,2024-03-07

@@ -2,6 +2,7 @@
 CurrentUserContext — the authenticated user + workspace context for every request.
 Also provides the get_current_user_context FastAPI dependency.
 """
+from typing import Optional
 import uuid
 
 from fastapi import Depends
@@ -25,7 +26,7 @@ class CurrentUserContext(BaseModel):
 
 
 def get_current_user_context(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> CurrentUserContext:
     """
     FastAPI dependency — validates Bearer token and returns CurrentUserContext.

@@ -46,10 +46,10 @@ Analyze the unmatched record below and provide a clear, concise explanation for 
 ## Required JSON Output
 
 ```json
-{
+{{
   "explanation": "Clear 2-3 sentence explanation of why this record didn't match.",
   "probable_cause": "Short root cause label (e.g., 'Settlement pending', 'Refund recorded in gateway but not reflected in bank', 'Bank credit date outside settlement window')",
   "recommended_action": "One specific action the accountant should take.",
   "confidence": "HIGH | MEDIUM | LOW"
-}
+}}
 ```

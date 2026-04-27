@@ -1,15 +1,16 @@
 .PHONY: help up down restart logs build shell migrate migrate-new test lint format check
 
 # ─────────────────────────────────────────────────────────────────
-# Venv
+# Venv (Assumed to be in root)
 # ─────────────────────────────────────────────────────────────────
-VENV     := .venv
+ROOT_DIR := $(shell pwd)
+VENV     := $(ROOT_DIR)/.venv
 PYTHON   := $(VENV)/bin/python
 PIP      := $(VENV)/bin/pip
 UVICORN  := $(VENV)/bin/uvicorn
 PYTEST   := $(VENV)/bin/pytest
 RUFF     := $(VENV)/bin/ruff
-ALEMBIC  := cd backend && ../$(VENV)/bin/alembic
+ALEMBIC  := cd backend && ../.venv/bin/alembic
 RQ       := $(VENV)/bin/rq
 
 

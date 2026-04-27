@@ -1,0 +1,10 @@
+meta {
+  name: Execute Run
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/reconciliation-runs/{{run_id}}/run
+  auth: inherit
+}

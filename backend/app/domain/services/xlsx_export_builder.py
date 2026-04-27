@@ -8,10 +8,12 @@ Generates a multi-sheet workbook:
 
 No DB access. Takes plain dicts. Returns bytes.
 """
+from __future__ import annotations
+from typing import Union, Optional
 import io
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Union, Any
 
 import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -33,7 +35,7 @@ def build_xlsx(
     run_name: str,
     run_status: str,
     run_date: str,
-    match_rate_pct: int | None,
+    match_rate_pct: Optional[int],
     total_source_rows: int,
     total_target_rows: int,
     matched_count: int,
@@ -71,7 +73,7 @@ def _build_summary_sheet(
     run_name: str,
     run_status: str,
     run_date: str,
-    match_rate_pct: int | None,
+    match_rate_pct: Optional[int],
     total_source_rows: int,
     total_target_rows: int,
     matched_count: int,
@@ -212,7 +214,7 @@ def _write_header_row(ws, headers: list[str]) -> None:
     ws.row_dimensions[1].height = 20
 
 
-def _fmt_decimal(value: Any) -> str | float:
+def _fmt_decimal(value: Any) -> Union[str, float]:
     if value is None:
         return ""
     try:

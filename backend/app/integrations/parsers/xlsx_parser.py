@@ -1,3 +1,4 @@
+from typing import Union
 """
 Excel (XLSX/XLS) parser — uses openpyxl via pandas.
 Reads the first sheet by default; can specify sheet_name.
@@ -13,7 +14,7 @@ logger = structlog.get_logger(__name__)
 
 
 class XLSXParser(BaseParser):
-    def __init__(self, sheet_name: int | str = 0) -> None:
+    def __init__(self, sheet_name: Union[int, str] = 0) -> None:
         self.sheet_name = sheet_name
 
     def parse(self, file_bytes: bytes, file_name: str = "") -> ParseResult:

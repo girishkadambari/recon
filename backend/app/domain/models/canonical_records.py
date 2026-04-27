@@ -4,6 +4,8 @@ Canonical record models for each data source type.
 All monetary amounts use NUMERIC(18,6) — never float.
 All dates are timezone-aware.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from datetime import datetime
 
@@ -40,28 +42,28 @@ class PaymentRecord(
     )
     row_number: Mapped[int] = mapped_column(nullable=False)
 
-    transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    payment_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    order_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    settlement_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    payout_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    invoice_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    customer_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    transaction_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    payment_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    order_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    settlement_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    payout_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    invoice_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    customer_email: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    customer_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
 
-    gross_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    fee_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    tax_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    refund_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    net_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    gross_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    fee_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    tax_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    refund_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    net_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
 
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default=DEFAULT_CURRENCY)
-    status: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    gateway: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
+    gateway: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
+    description: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
-    transaction_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
-    settlement_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    transaction_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    settlement_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self) -> str:
         return f"<PaymentRecord id={self.id} txn={self.transaction_id} amount={self.gross_amount}>"
@@ -85,21 +87,21 @@ class SettlementRecord(
     )
     row_number: Mapped[int] = mapped_column(nullable=False)
 
-    settlement_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    payout_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    utr: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    gateway: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    settlement_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    payout_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    utr: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    gateway: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
 
-    gross_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    fee_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    tax_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    refund_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    net_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    gross_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    fee_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    tax_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    refund_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    net_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
 
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default=DEFAULT_CURRENCY)
-    status: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
 
-    settlement_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    settlement_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     def __repr__(self) -> str:
         return f"<SettlementRecord id={self.id} settlement={self.settlement_id} net={self.net_amount}>"
@@ -122,16 +124,16 @@ class BankRecord(
     )
     row_number: Mapped[int] = mapped_column(nullable=False)
 
-    utr: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    reference: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    narration: Mapped[str | None] = mapped_column(Text, nullable=True)
+    utr: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    reference: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    narration: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
-    credit_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    debit_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    balance: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    credit_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    debit_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    balance: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
 
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default=DEFAULT_CURRENCY)
-    transaction_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    transaction_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     def __repr__(self) -> str:
         return f"<BankRecord id={self.id} utr={self.utr} credit={self.credit_amount}>"
@@ -154,20 +156,20 @@ class InvoiceRecord(
     )
     row_number: Mapped[int] = mapped_column(nullable=False)
 
-    invoice_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    customer_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    payment_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    gateway: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    invoice_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    customer_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    customer_email: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    subscription_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    payment_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    gateway: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
 
-    gross_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    net_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    gross_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    net_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default=DEFAULT_CURRENCY)
-    status: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
 
-    invoice_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
-    due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    invoice_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    due_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     def __repr__(self) -> str:
         return f"<InvoiceRecord id={self.id} invoice={self.invoice_id} amount={self.gross_amount}>"
@@ -190,19 +192,27 @@ class BillingTransactionRecord(
     )
     row_number: Mapped[int] = mapped_column(nullable=False)
 
-    transaction_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    invoice_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
-    subscription_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    customer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    gateway: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    gateway_txn_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    billing_system: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
+    billing_transaction_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    billing_invoice_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    billing_customer_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    billing_subscription_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    
+    transaction_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    invoice_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    subscription_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    customer_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
+    
+    gateway: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
+    gateway_transaction_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
+    gateway_txn_id: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True, index=True)
 
-    gross_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    net_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    gross_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    net_amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default=DEFAULT_CURRENCY)
-    status: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status: Mapped[Optional[str ]] = mapped_column(String(100), nullable=True)
 
-    transaction_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    transaction_date: Mapped[Optional[datetime ]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
 
     def __repr__(self) -> str:
-        return f"<BillingTransactionRecord id={self.id} txn={self.transaction_id} amount={self.gross_amount}>"
+        return f"<BillingTransactionRecord id={self.id} system={self.billing_system} txn={self.billing_transaction_id}>"

@@ -72,13 +72,13 @@ def _run_reconciliation(client, user):
     tgt_id = _full_pipeline(client, user, BANK_CSV, "BANK_STATEMENT", MOCK_BANK_MAPPING)
 
     resp = client.post(
-        "/api/reconciliations",
-        json={"name": f"Recon {uuid.uuid4().hex[:4]}", "source_file_id": src_id, "target_file_id": tgt_id},
+        "/api/reconciliation-runs",
+        json={"name": f"Recon {uuid.uuid4().hex[:4]}", "uploaded_file_ids": [src_id, tgt_id]},
         headers=user["headers"],
     )
     assert resp.status_code == 201
     run_id = resp.json()["data"]["id"]
-    resp = client.post(f"/api/reconciliations/{run_id}/execute", headers=user["headers"])
+    resp = client.post(f"/api/reconciliation-runs/{run_id}/run", headers=user["headers"])
     assert resp.status_code == 200
     return run_id
 
@@ -103,7 +103,7 @@ class TestXLSXExport:
         run_id = _run_reconciliation(client, user)
 
         # Generate export
-        resp = client.post(f"/api/reconciliations/{run_id}/export", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/export", headers=user["headers"])
         assert resp.status_code == 201, resp.text
         job_data = resp.json()["data"]
         assert job_data["status"] == "COMPLETED"
@@ -112,7 +112,7 @@ class TestXLSXExport:
         job_id = job_data["id"]
 
         # List jobs
-        resp = client.get(f"/api/reconciliations/{run_id}/export", headers=user["headers"])
+        resp = client.get(f"/api/reconciliation-runs/{run_id}/export", headers=user["headers"])
         assert resp.status_code == 200
         jobs = resp.json()["data"]
         assert len(jobs) >= 1
@@ -120,7 +120,7 @@ class TestXLSXExport:
 
         # Download
         resp = client.get(
-            f"/api/reconciliations/{run_id}/export/{job_id}/download",
+            f"/api/reconciliation-runs/{run_id}/export/{job_id}/download",
             headers=user["headers"],
         )
         assert resp.status_code == 200
@@ -138,7 +138,7 @@ class TestXLSXExport:
         run_id = _run_reconciliation(client, user)
 
         resp = client.post(
-            f"/api/reconciliations/{run_id}/export?scope=MATCHES_ONLY",
+            f"/api/reconciliation-runs/{run_id}/export?scope=MATCHES_ONLY",
             headers=user["headers"],
         )
         assert resp.status_code == 201
@@ -154,7 +154,7 @@ class TestXLSXExport:
         run_id = _run_reconciliation(client, user)
 
         resp = client.post(
-            f"/api/reconciliations/{run_id}/export?scope=EXCEPTIONS_ONLY",
+            f"/api/reconciliation-runs/{run_id}/export?scope=EXCEPTIONS_ONLY",
             headers=user["headers"],
         )
         assert resp.status_code == 201
@@ -168,25 +168,25 @@ class TestXLSXExport:
         src_id = _full_pipeline(client, user, STRIPE_CSV, "STRIPE_REPORT", MOCK_STRIPE_MAPPING)
         tgt_id = _full_pipeline(client, user, BANK_CSV, "BANK_STATEMENT", MOCK_BANK_MAPPING)
         resp = client.post(
-            "/api/reconciliations",
-            json={"name": "Pending", "source_file_id": src_id, "target_file_id": tgt_id},
+            "/api/reconciliation-runs",
+            json={"name": "Pending", "uploaded_file_ids": [src_id, tgt_id]},
             headers=user["headers"],
         )
         run_id = resp.json()["data"]["id"]
         # No execute call — status = PENDING
 
-        resp = client.post(f"/api/reconciliations/{run_id}/export", headers=user["headers"])
+        resp = client.post(f"/api/reconciliation-runs/{run_id}/export", headers=user["headers"])
         assert resp.status_code == 409
 
     def test_export_requires_auth(self, client: TestClient):
-        resp = client.post(f"/api/reconciliations/{uuid.uuid4()}/export")
+        resp = client.post(f"/api/reconciliation-runs/{uuid.uuid4()}/export")
         assert resp.status_code == 401
 
     def test_download_nonexistent_job_returns_404(self, client: TestClient):
         user = _login(client, f"export5_{uuid.uuid4().hex[:6]}@x.com")
         run_id = _run_reconciliation(client, user)
         resp = client.get(
-            f"/api/reconciliations/{run_id}/export/{uuid.uuid4()}/download",
+            f"/api/reconciliation-runs/{run_id}/export/{uuid.uuid4()}/download",
             headers=user["headers"],
         )
         assert resp.status_code == 404

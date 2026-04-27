@@ -1,6 +1,7 @@
 """
 Money utilities — all monetary values must use Decimal, never float.
 """
+from typing import Optional
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Any
 
@@ -32,7 +33,7 @@ def parse_decimal(value: Any, field_name: str = "amount") -> Decimal:
     raise ValueError(f"Unsupported type {type(value).__name__} for field '{field_name}'")
 
 
-def parse_decimal_or_none(value: Any, field_name: str = "amount") -> Decimal | None:
+def parse_decimal_or_none(value: Any, field_name: str = "amount") -> Optional[Decimal]:
     """Returns None if the value is None or empty, otherwise parses to Decimal."""
     if value is None or (isinstance(value, str) and not value.strip()):
         return None

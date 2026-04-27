@@ -1,6 +1,8 @@
 """
 ReconciliationRunFile, MatchCandidate, ExceptionItem ORM models.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 from decimal import Decimal
 
@@ -15,9 +17,12 @@ from app.domain.models.base import (
     UUIDPrimaryKeyMixin,
     WorkspaceScopedMixin,
 )
-from app.domain.enums.reconciliation_enums import (
-    ExceptionReason,
+from app.domain.enums.exception_enums import (
+    ExceptionType,
+    ExceptionSeverity,
     ExceptionStatus,
+)
+from app.domain.enums.reconciliation_enums import (
     FileRole,
     MatchStatus,
     MatchStrategy,
@@ -86,12 +91,12 @@ class MatchCandidate(
     )
 
     # Deltas for human review
-    amount_delta: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
-    date_delta_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    amount_delta: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
+    date_delta_days: Mapped[Optional[int ]] = mapped_column(Integer, nullable=True)
 
     # Human review
-    reviewed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
-    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewed_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(UUID(as_uuid=True), nullable=True)
+    review_note: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return (
@@ -122,27 +127,36 @@ class ExceptionItem(
     record_table: Mapped[str] = mapped_column(String(100), nullable=False)
     file_role: Mapped[str] = mapped_column(String(20), nullable=False)  # SOURCE or TARGET
 
-    reason: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    exception_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    severity: Mapped[str] = mapped_column(
+        String(20), nullable=False, default=ExceptionSeverity.MEDIUM, index=True
+    )
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
         default=ExceptionStatus.OPEN,
         index=True,
     )
+    
+    # Stores {payment_id: "...", settlement_id: "..."} for multi-way lookup
+    related_record_refs: Mapped[Optional[dict ]] = mapped_column(JSONB, nullable=True)
+    
+    # Actionable 1-liner for the user
+    suggested_action: Mapped[Optional[str ]] = mapped_column(String(255), nullable=True)
 
     # Amount context for display
-    amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    amount: Mapped[Optional[Decimal ]] = mapped_column(Numeric(18, 6), nullable=True)
     currency: Mapped[str] = mapped_column(String(10), nullable=False, default="INR")
 
     # Raw details for AI explanation context
-    details_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    details_json: Mapped[Optional[dict ]] = mapped_column(JSONB, nullable=True)
 
     # AI-generated explanation (filled in Phase 5)
-    ai_explanation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_explanation: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     # Human resolution
-    resolved_by_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
-    resolution_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(UUID(as_uuid=True), nullable=True)
+    resolution_note: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
-        return f"<ExceptionItem id={self.id} reason={self.reason} status={self.status}>"
+        return f"<ExceptionItem id={self.id} type={self.exception_type} status={self.status}>"

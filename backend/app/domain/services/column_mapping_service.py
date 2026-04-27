@@ -1,6 +1,8 @@
 """
 ColumnMappingService — orchestrates AI suggestion + user confirmation.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 import structlog
@@ -75,6 +77,13 @@ class ColumnMappingService:
             created_by_user_id=user_id,
         )
 
+        # Reset file status and mapping normalization status
+        from app.domain.enums.mapping_enums import NormalizationStatus
+        from app.domain.enums.file_enums import UploadedFileStatus
+        mapping.normalization_status = NormalizationStatus.PENDING
+        mapping.normalization_error = None
+        self.file_repo.update_status(uf, UploadedFileStatus.PARSED)
+
         self.audit_svc.log(
             event_type=AuditEventType.COLUMN_MAPPING_SUGGESTED,
             actor_user_id=user_id,
@@ -110,19 +119,25 @@ class ColumnMappingService:
         workspace_id: uuid.UUID,
         file_id: uuid.UUID,
         user_id: uuid.UUID,
-        updated_mapping: dict | None = None,
+        updated_mapping: Optional[dict] = None,
     ) -> ColumnMapping:
         """
         Confirm (possibly with edits) the AI-suggested mapping.
-        This unlocks normalization.
+        Idempotent — can be called multiple times to update the mapping.
+        Resets normalization_status so normalization can be re-run after changes.
         """
         mapping = self.get_mapping(workspace_id, file_id)
 
+        from app.domain.enums.mapping_enums import NormalizationStatus
+        from app.domain.enums.file_enums import UploadedFileStatus
+        
+        uf = self.file_repo.get_by_id(file_id, workspace_id)
+        if uf and uf.status == UploadedFileStatus.NORMALIZED:
+             self.file_repo.update_status(uf, UploadedFileStatus.PARSED)
+
         if mapping.status == MappingStatus.CONFIRMED:
-            raise ConflictError(
-                f"Mapping for file {file_id} is already confirmed. "
-                "Re-suggest to reset it."
-            )
+            mapping.normalization_status = NormalizationStatus.PENDING
+            mapping.normalization_error = None
 
         mapping = self.mapping_repo.confirm(
             mapping,

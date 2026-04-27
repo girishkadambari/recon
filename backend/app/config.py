@@ -11,7 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=("../.env", ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
@@ -54,9 +54,9 @@ class Settings(BaseSettings):
     AI_PROVIDER: Literal["anthropic", "openai"] = "anthropic"
     ANTHROPIC_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
-    AI_MODEL_COLUMN_MAPPING: str = "claude-3-5-haiku-20241022"
-    AI_MODEL_EXPLANATION: str = "claude-3-5-haiku-20241022"
-    AI_MODEL_SUMMARY: str = "claude-3-5-haiku-20241022"
+    AI_MODEL_COLUMN_MAPPING: str = "claude-haiku-4-5-20251001"
+    AI_MODEL_EXPLANATION: str = "claude-haiku-4-5-20251001"
+    AI_MODEL_SUMMARY: str = "claude-haiku-4-5-20251001"
     AI_REQUEST_TIMEOUT_SECONDS: int = 30
 
     # ── File Upload ──────────────────────────────────────────────────
@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # ── Security ─────────────────────────────────────────────────────
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3001,http://localhost:8000"
 
     # ── Derived helpers ──────────────────────────────────────────────
     @property

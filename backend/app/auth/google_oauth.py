@@ -2,6 +2,7 @@
 Google OAuth2 client.
 Exchanges authorization code for tokens and fetches the user's Google profile.
 """
+from typing import Optional
 import httpx
 import structlog
 
@@ -18,7 +19,7 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 GOOGLE_SCOPES = "openid email profile"
 
 
-def get_google_auth_url(state: str | None = None) -> str:
+def get_google_auth_url(state: Optional[str] = None) -> str:
     """Build the Google OAuth2 authorization URL."""
     params = {
         "client_id": settings.GOOGLE_CLIENT_ID,

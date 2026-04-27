@@ -1,8 +1,10 @@
 """
 Audit repository — insert-only. Never update audit records.
 """
+from __future__ import annotations
+from typing import Union, Optional
 import uuid
-from typing import Any
+from typing import Union, Any
 
 from sqlalchemy.orm import Session
 
@@ -16,14 +18,14 @@ class AuditRepository:
 
     def create(
         self,
-        event_type: AuditEventType | str,
-        actor_user_id: uuid.UUID | None = None,
-        workspace_id: uuid.UUID | None = None,
-        entity_type: str | None = None,
-        entity_id: uuid.UUID | None = None,
-        metadata: dict[str, Any] | None = None,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+        event_type: Union[AuditEventType, str],
+        actor_user_id: Optional[uuid.UUID] = None,
+        workspace_id: Optional[uuid.UUID] = None,
+        entity_type: Optional[str] = None,
+        entity_id: Optional[uuid.UUID] = None,
+        metadata:Optional[ dict[str, Any] ] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
     ) -> AuditEvent:
         event = AuditEvent(
             event_type=str(event_type),

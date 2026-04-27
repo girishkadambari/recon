@@ -1,0 +1,21 @@
+meta {
+  name: Create Run (Multi-file)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/reconciliation-runs
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Multi-file Recon Job",
+    "uploaded_file_ids": [
+      "{{source_file_id}}",
+      "{{target_file_id}}"
+    ]
+  }
+}

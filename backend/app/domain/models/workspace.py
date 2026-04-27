@@ -2,6 +2,8 @@
 Workspace ORM model.
 Table: workspaces
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy import String
@@ -16,7 +18,7 @@ class Workspace(UUIDPrimaryKeyMixin, TimestampMixin, UserAuditMixin, Base):
     __tablename__ = "workspaces"
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    slug: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True, index=True)
+    slug: Mapped[Optional[str ]] = mapped_column(String(255), unique=True, nullable=True, index=True)
     status: Mapped[str] = mapped_column(
         String(50),
         nullable=False,

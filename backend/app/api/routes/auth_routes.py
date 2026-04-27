@@ -7,6 +7,8 @@ POST /api/auth/logout            — Logout (client-side token drop)
 GET  /api/auth/me                — Get current user and workspace
 POST /api/auth/dev-login         — LOCAL ONLY: dev bypass login
 """
+from __future__ import annotations
+from typing import Optional
 import structlog
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -47,8 +49,8 @@ def google_login(request: Request) -> RedirectResponse:
 
 @router.get("/google/callback", summary="Google OAuth callback")
 async def google_callback(
-    code: str | None = None,
-    error: str | None = None,
+    code: Optional[str] = None,
+    error: Optional[str] = None,
     request: Request = None,
     db: Session = Depends(get_db),
 ) -> JSONResponse:
@@ -69,11 +71,9 @@ async def google_callback(
         user_agent=request.headers.get("user-agent") if request else None,
     )
 
-    request_id = getattr(request.state, "request_id", None) if request else None
-    return JSONResponse(
-        status_code=200,
-        content={"data": result, "request_id": request_id},
-    )
+    # For MVP, redirect to frontend with access_token in query param
+    url = f"{settings.FRONTEND_BASE_URL}/?access_token={result['access_token']}"
+    return RedirectResponse(url=url)
 
 
 @router.post("/logout", summary="Logout")
@@ -93,6 +93,7 @@ def logout(
 
 @router.get("/me", summary="Get current user and workspace", response_model=None)
 def get_me(
+    request: Request,
     ctx: CurrentUserContext = Depends(get_current_user_context),
     db: Session = Depends(get_db),
 ) -> JSONResponse:
@@ -115,9 +116,13 @@ def get_me(
         role=ctx.role,
     ).model_dump(mode="json")
 
+    request_id = getattr(request.state, "request_id", None)
     return JSONResponse(
         status_code=200,
-        content={"data": {"user": user_data, "active_workspace": ws_data}},
+        content={
+            "data": {"user": user_data, "active_workspace": ws_data},
+            "request_id": request_id,
+        },
     )
 
 

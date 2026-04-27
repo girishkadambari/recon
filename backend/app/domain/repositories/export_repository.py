@@ -1,6 +1,8 @@
 """
 ExportRepository — CRUD for export_jobs.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy.orm import Session
@@ -33,7 +35,7 @@ class ExportRepository:
         self.db.flush()
         return job
 
-    def get(self, job_id: uuid.UUID, workspace_id: uuid.UUID) -> ExportJob | None:
+    def get(self, job_id: uuid.UUID, workspace_id: uuid.UUID) -> Optional[ExportJob]:
         return (
             self.db.query(ExportJob)
             .filter(
@@ -45,7 +47,7 @@ class ExportRepository:
 
     def get_latest_for_run(
         self, run_id: uuid.UUID, workspace_id: uuid.UUID
-    ) -> ExportJob | None:
+    ) -> Optional[ExportJob]:
         return (
             self.db.query(ExportJob)
             .filter(
@@ -64,6 +66,18 @@ class ExportRepository:
             self.db.query(ExportJob)
             .filter(
                 ExportJob.run_id == run_id,
+                ExportJob.workspace_id == workspace_id,
+            )
+            .order_by(ExportJob.created_at.desc())
+            .all()
+        )
+
+    def list_all(
+        self, workspace_id: uuid.UUID
+    ) -> list[ExportJob]:
+        return (
+            self.db.query(ExportJob)
+            .filter(
                 ExportJob.workspace_id == workspace_id,
             )
             .order_by(ExportJob.created_at.desc())

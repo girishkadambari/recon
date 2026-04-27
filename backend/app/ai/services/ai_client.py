@@ -2,6 +2,7 @@
 Anthropic AI client — thin wrapper around the Anthropic Python SDK.
 Isolated from all business logic. All AI calls go through this module.
 """
+from typing import Optional
 import json
 import os
 import re
@@ -16,10 +17,9 @@ from app.core.errors import AIServiceError
 logger = structlog.get_logger(__name__)
 settings = get_settings()
 
-# Default model — claude-3-5-haiku is fast and cheap for structured tasks
-DEFAULT_MODEL = "claude-3-5-haiku-20241022"
-# For high-stakes explanation tasks
-EXPLANATION_MODEL = "claude-3-5-sonnet-20241022"
+# Default model — claude-haiku-4-5 is fast and cheap for structured tasks
+DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+EXPLANATION_MODEL = "claude-sonnet-4-5-20250929"
 
 
 def _get_client() -> anthropic.Anthropic:
@@ -37,7 +37,7 @@ def complete(
     prompt: str,
     model: str = DEFAULT_MODEL,
     max_tokens: int = 2048,
-    system: str | None = None,
+    system: Optional[str] = None,
 ) -> str:
     """
     Send a prompt to Claude and return the raw text response.
@@ -76,7 +76,7 @@ def complete_json(
     prompt: str,
     model: str = DEFAULT_MODEL,
     max_tokens: int = 2048,
-    system: str | None = None,
+    system: Optional[str] = None,
 ) -> dict[str, Any]:
     """
     Same as complete() but parses and returns the JSON response.

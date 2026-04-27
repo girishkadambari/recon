@@ -1,9 +1,10 @@
 """
 Phase 3 schemas — column mapping and normalization API request/response models.
 """
+from __future__ import annotations
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
@@ -13,12 +14,12 @@ class ColumnMappingResponse(BaseModel):
     workspace_id: uuid.UUID
     uploaded_file_id: uuid.UUID
     mapping_json: dict[str, str]
-    ai_suggested_mapping_json: dict[str, str] | None
-    ai_confidence_score: int | None
+    ai_suggested_mapping_json:Optional[ dict[str, str] ]
+    ai_confidence_score: Optional[int]
     status: str
     normalization_status: str
-    normalization_error: str | None
-    confirmed_by_user_id: uuid.UUID | None
+    normalization_error: Optional[str]
+    confirmed_by_user_id: Optional[uuid.UUID]
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -29,7 +30,7 @@ class ConfirmMappingRequest(BaseModel):
     Optional updated mapping the user can send when confirming.
     If not provided, the AI-suggested mapping is used as-is.
     """
-    mapping: dict[str, str] | None = None
+    mapping:Optional[ dict[str, str] ] = None
 
 
 class NormalizationResponse(BaseModel):

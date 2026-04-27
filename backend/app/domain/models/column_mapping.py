@@ -5,6 +5,8 @@ Table: column_mappings
 Stores the confirmed mapping from raw column names → CanonicalField values
 for a specific uploaded file. One row per uploaded file.
 """
+from __future__ import annotations
+from typing import Optional
 import uuid
 
 from sqlalchemy import ForeignKey, String, Text
@@ -43,8 +45,8 @@ class ColumnMapping(
     mapping_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
     # AI suggestion (preserved separately so user can see what AI recommended)
-    ai_suggested_mapping_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    ai_confidence_score: Mapped[int | None] = mapped_column(nullable=True)
+    ai_suggested_mapping_json: Mapped[Optional[dict ]] = mapped_column(JSONB, nullable=True)
+    ai_confidence_score: Mapped[Optional[int ]] = mapped_column(nullable=True)
 
     status: Mapped[str] = mapped_column(
         String(50),
@@ -53,7 +55,7 @@ class ColumnMapping(
         index=True,
     )
 
-    confirmed_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+    confirmed_by_user_id: Mapped[Optional[uuid.UUID ]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
@@ -63,7 +65,7 @@ class ColumnMapping(
         nullable=False,
         default="PENDING",
     )
-    normalization_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    normalization_error: Mapped[Optional[str ]] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"<ColumnMapping file={self.uploaded_file_id} status={self.status}>"
