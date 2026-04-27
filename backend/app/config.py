@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     # ── Google OAuth ─────────────────────────────────────────────────
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/auth/google/callback"
+    GOOGLE_REDIRECT_URI: str = "https://api.settleproof.app/api/auth/google/callback"
 
     # ── S3 / LocalStack ──────────────────────────────────────────────
     S3_ENDPOINT_URL: str = "http://localhost:4566"
