@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     APP_NAME: str = "AI Reconciliation Worker"
     APP_ENV: Literal["local", "test", "staging", "production"] = "local"
     APP_DEBUG: bool = False
-    API_BASE_URL: str = "http://localhost:8000"
-    FRONTEND_BASE_URL: str = "http://localhost:3000"
+    API_BASE_URL: str = "https://api.settleproof.app"
+    FRONTEND_BASE_URL: str = "https://cloud.settleproof.app"
 
     # ── Database ─────────────────────────────────────────────────────
     DATABASE_URL: str = Field(
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # ── Security ─────────────────────────────────────────────────────
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3001,http://localhost:8000"
+    CORS_ALLOWED_ORIGINS: str = "http://localhost:3001,https://cloud.settleproof.app,https://api.settleproof.app,https://538f9792.reconpilot-ai-prep.pages.dev"
 
     # ── Derived helpers ──────────────────────────────────────────────
     @property
