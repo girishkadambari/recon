@@ -29,6 +29,13 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://recon:recon@localhost:5432/recon_worker"
     )
 
+    @property
+    def sqlalchemy_database_url(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
+
     # ── Redis ────────────────────────────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 

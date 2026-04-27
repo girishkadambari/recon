@@ -14,7 +14,7 @@ settings = get_settings()
 
 # ── Engine ───────────────────────────────────────────────────────────
 engine = create_engine(
-    settings.DATABASE_URL,
+    settings.sqlalchemy_database_url,
     pool_pre_ping=True,       # verify connection health before each use
     pool_size=10,
     max_overflow=20,
