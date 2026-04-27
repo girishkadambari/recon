@@ -51,11 +51,11 @@ class Settings(BaseSettings):
 
     # ── S3 / LocalStack ──────────────────────────────────────────────
     S3_ENDPOINT_URL: str = "http://localhost:4566"
-    S3_ACCESS_KEY_ID: str = "test"
-    S3_SECRET_ACCESS_KEY: str = "test"
-    S3_REGION: str = "us-east-1"
+    S3_ACCESS_KEY_ID: str = Field(default="test", alias="S3_ACCESS_KEY")
+    S3_SECRET_ACCESS_KEY: str = Field(default="test", alias="S3_SECRET_KEY")
+    S3_REGION: str = "auto"
     S3_BUCKET_NAME: str = "recon-worker-local-files"
-    S3_FORCE_PATH_STYLE: bool = True
+    S3_FORCE_PATH_STYLE: bool = False
 
     # ── AI Provider ──────────────────────────────────────────────────
     AI_PROVIDER: Literal["anthropic", "openai"] = "anthropic"
